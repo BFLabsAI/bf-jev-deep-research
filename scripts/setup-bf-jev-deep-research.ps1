@@ -2,28 +2,41 @@
 <#
 Instalador do pacote bf-jev-deep-research (Windows nativo, PowerShell).
 
-Uso (a partir da pasta do projeto onde voce quer instalar):
+Uso — por projeto (instala tudo dentro da pasta atual):
     iwr -useb https://raw.githubusercontent.com/BFLabsAI/bf-jev-deep-research/main/scripts/setup-bf-jev-deep-research.ps1 | iex
+
+Uso — global (uma unica instalacao em $HOME\bf-jev-deep-research, disponivel
+pra todos os projetos; skill fica em $HOME\agents\skills ou $HOME\.claude\skills):
+    $script = iwr -useb https://raw.githubusercontent.com/BFLabsAI/bf-jev-deep-research/main/scripts/setup-bf-jev-deep-research.ps1
+    Invoke-Expression "& { $($script.Content) } -Global"
 
 Ou baixando primeiro e rodando localmente:
     .\setup-bf-jev-deep-research.ps1 -TargetDir "C:\caminho\do\projeto"
+    .\setup-bf-jev-deep-research.ps1 -Global
 
 O que este script faz, na mesma ordem que a versao bash (setup-bf-jev-deep-research.sh):
-  1. Clona o pacote (raso) para uma pasta temporaria.
-  2. Copia o pacote inteiro (skill + estudo bruto) para <projeto>\bf-jev-deep-research\
-     -- a "biblioteca de referencia" navegavel dentro do projeto.
-  3. Instala a SKILL de fato onde o agente vai encontra-la:
-       - se <projeto>\agents\skills\ ja existir, instala ali e cria uma JUNCTION
-         (nao symlink) em <projeto>\.claude\skills\<nome> apontando para la.
+  1. Decide a "base" da instalacao: $HOME (com -Global) ou a pasta do projeto
+     (padrao -- pasta atual, ou -TargetDir).
+  2. Clona o pacote (raso) para uma pasta temporaria.
+  3. Copia o pacote inteiro (skill + estudo bruto) para <base>\bf-jev-deep-research\
+     -- a "biblioteca de referencia" navegavel, seja dentro do projeto ou
+     global em $HOME\bf-jev-deep-research.
+  4. Instala a SKILL de fato onde o agente vai encontra-la, dentro dessa mesma base:
+       - se <base>\agents\skills\ ja existir, instala ali e cria uma JUNCTION
+         (nao symlink) em <base>\.claude\skills\<nome> apontando para la.
          Junction e usada de proposito: ao contrario de symlink de diretorio,
          nao exige privilegio de administrador nem "Modo de desenvolvedor" ativado.
-       - senao, instala direto em <projeto>\.claude\skills\<nome>.
-  4. Reescreve os links relativos da copia instalada da skill para a nova
-     profundidade (mesma logica da versao bash -- ver comentario la).
+       - senao, instala direto em <base>\.claude\skills\<nome>.
+  5. Reescreve os links relativos da copia instalada da skill para a nova
+     profundidade (mesma logica da versao bash -- ver comentario la). Como a
+     skill instalada e o estudo bruto sempre compartilham a mesma base, essa
+     conta de profundidade e sempre igual -- o script decide e grava o caminho
+     certo na hora da instalacao.
 #>
 
 param(
-    [string]$TargetDir = (Get-Location).Path
+    [string]$TargetDir = (Get-Location).Path,
+    [switch]$Global
 )
 
 $ErrorActionPreference = "Stop"
@@ -34,6 +47,14 @@ $SkillName = "jev-typesafe-expert"
 
 function Info($msg) { Write-Host "==> $msg" -ForegroundColor Cyan }
 function Ok($msg)   { Write-Host "OK  $msg" -ForegroundColor Green }
+
+if ($Global) {
+    $BaseDir = $HOME
+    Info "Modo global -- instalando em: $BaseDir"
+} else {
+    $BaseDir = $TargetDir
+    Info "Modo por-projeto -- instalando em: $BaseDir"
+}
 
 if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
     Write-Error "Este instalador precisa do git no PATH. Instale o Git for Windows e rode de novo."
@@ -47,16 +68,17 @@ try {
     Info "Baixando $PkgName..."
     git clone --depth=1 --quiet $RepoUrl $TmpDir
 
-    $PkgDest = Join-Path $TargetDir $PkgName
+    $PkgDest = Join-Path $BaseDir $PkgName
     Info "Instalando a biblioteca de referencia em: $PkgDest"
     if (Test-Path $PkgDest) { Remove-Item $PkgDest -Recurse -Force }
     New-Item -ItemType Directory -Path $PkgDest | Out-Null
     Copy-Item -Path (Join-Path $TmpDir '*') -Destination $PkgDest -Recurse -Force -Exclude ".git"
     Ok "$PkgName\ instalado (skill + estudo bruto navegavel)."
 
-    # --- Decide onde a skill "viva" vai morar ---
-    $AgentsSkills = Join-Path $TargetDir "agents\skills"
-    $ClaudeSkills = Join-Path $TargetDir ".claude\skills"
+    # --- Decide onde a skill "viva" vai morar (sempre dentro da mesma $BaseDir
+    #     do estudo bruto -- $HOME no modo global, raiz do projeto no padrao) ---
+    $AgentsSkills = Join-Path $BaseDir "agents\skills"
+    $ClaudeSkills = Join-Path $BaseDir ".claude\skills"
 
     $UseAgents = Test-Path $AgentsSkills
     if ($UseAgents) {
@@ -102,11 +124,17 @@ try {
     }
 
     Write-Host ""
-    Ok "Instalacao concluida."
+    $modeLabel = if ($Global) { "global" } else { "project" }
+    Ok "Instalacao concluida (modo: $modeLabel)."
     Write-Host "  Biblioteca completa (skill + estudo bruto): $PkgDest"
     Write-Host "  Skill ativa para o agente:                  $CanonicalDir"
     Write-Host ""
-    Write-Host "Para reinstalar/atualizar, rode este mesmo comando de novo."
+    if ($Global) {
+        Write-Host "Essa skill agora esta disponivel em qualquer projeto seu nesta maquina."
+    } else {
+        Write-Host "Essa skill esta disponivel so neste projeto."
+    }
+    Write-Host "Para reinstalar/atualizar, rode este mesmo comando de novo (com -Global se foi assim que instalou)."
 }
 finally {
     Remove-Item $TmpDir -Recurse -Force -ErrorAction SilentlyContinue

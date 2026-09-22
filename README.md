@@ -8,33 +8,51 @@ Isso não é um resumo de segunda mão. É o resultado de um processo de pesquis
 
 ## Instalação
 
-Rode um dos comandos abaixo **de dentro da pasta raiz do projeto** onde você quer instalar. O instalador copia o pacote completo para `bf-jev-deep-research/` na raiz do projeto e ativa a skill no local onde seu agente (Claude Code, Cursor, Codex, etc.) vai encontrá-la.
+Existem dois modos de instalação. Nos dois, o instalador copia o pacote completo (skill + estudo bruto) para uma pasta `bf-jev-deep-research/` e ativa a skill no local onde seu agente (Claude Code, Cursor, Codex, etc.) vai encontrá-la — a diferença é só **onde** essa base fica:
 
-**macOS / Linux / Git Bash / WSL:**
+| Modo | Onde fica `bf-jev-deep-research/` | Onde fica a skill ativa | Quando usar |
+|---|---|---|---|
+| **Por projeto** (padrão) | Na raiz do projeto atual | `<projeto>/agents/skills/` ou `<projeto>/.claude/skills/` | Estudo específico deste projeto, ou você quer poder versionar/compartilhar tudo junto no git do projeto. |
+| **Global** (`--global` / `-Global`) | Em `$HOME/bf-jev-deep-research/` (uma vez só) | `$HOME/agents/skills/` ou `$HOME/.claude/skills/` | Skill disponível em **qualquer projeto seu** nesta máquina, sem reinstalar por projeto. |
+
+**macOS / Linux / Git Bash / WSL — por projeto** (rode de dentro da pasta do projeto):
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/BFLabsAI/bf-jev-deep-research/main/scripts/setup-bf-jev-deep-research.sh | bash
 ```
 
-**Windows (PowerShell nativo):**
+**macOS / Linux / Git Bash / WSL — global:**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/BFLabsAI/bf-jev-deep-research/main/scripts/setup-bf-jev-deep-research.sh | bash -s -- --global
+```
+
+**Windows (PowerShell nativo) — por projeto** (rode de dentro da pasta do projeto):
 
 ```powershell
 iwr -useb https://raw.githubusercontent.com/BFLabsAI/bf-jev-deep-research/main/scripts/setup-bf-jev-deep-research.ps1 | iex
 ```
 
-Pré-requisito nos três casos: `git` no PATH (o instalador clona o pacote em vez de baixar um zip, para poder reinstalar/atualizar com o mesmo comando).
+**Windows (PowerShell nativo) — global:**
 
-Para reinstalar ou atualizar, rode o mesmo comando de novo — ele sobrescreve a instalação anterior.
+```powershell
+$script = iwr -useb https://raw.githubusercontent.com/BFLabsAI/bf-jev-deep-research/main/scripts/setup-bf-jev-deep-research.ps1
+Invoke-Expression "& { $($script.Content) } -Global"
+```
 
-### O que o instalador decide por você
+Pré-requisito nos três SOs: `git` no PATH (o instalador clona o pacote em vez de baixar um zip, para poder reinstalar/atualizar com o mesmo comando).
 
-| Situação no projeto-alvo | O que acontece |
+Para reinstalar ou atualizar, rode o mesmo comando de novo (com `--global`/`-Global` se foi assim que instalou da primeira vez) — ele sobrescreve a instalação anterior.
+
+### O que o instalador decide por você, dentro da base escolhida (projeto ou `$HOME`)
+
+| Situação na base | O que acontece |
 |---|---|
 | Não existe `agents/skills/` nem `.claude/skills/` | Cria `.claude/skills/jev-typesafe-expert/` com a skill. |
 | Só existe `.claude/skills/` | Instala direto ali. |
 | Existe `agents/skills/` (convenção de pasta de skills compartilhada entre múltiplos harnesses) | Instala a skill em `agents/skills/jev-typesafe-expert/` e cria um **link simbólico** (`symlink` no Mac/Linux, **junction** no Windows — junction não exige admin nem "Modo de desenvolvedor" ativado) em `.claude/skills/jev-typesafe-expert/` apontando para lá, evitando duplicar arquivos entre harnesses. |
 
-Em todos os casos, a pasta `bf-jev-deep-research/` completa (skill + estudo bruto) também é instalada na raiz do projeto como biblioteca de referência navegável — a skill instalada referencia essa pasta para quem quiser aprofundar além do que cabe no corpo da skill.
+Por que isso é decidido pelo instalador e não pela skill em si: a skill instalada referencia o estudo bruto em `bf-jev-deep-research/study/` usando um caminho relativo — e essa conta de "quantos níveis subir" só é constante porque skill e estudo sempre compartilham a mesma base (a raiz do projeto, ou `$HOME`). O instalador conhece essa base no momento da instalação e grava o caminho já correto; a skill nunca precisa "adivinhar" onde ela está.
 
 ---
 
