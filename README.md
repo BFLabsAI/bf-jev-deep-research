@@ -1,8 +1,36 @@
+<div align="center">
+
 # bf-jev-deep-research
 
-Estudo aprofundado sobre a **Jev**, o primeiro "System One Model" da [TypeSafe AI](https://typesafe.ai) — empacotado como (1) uma **skill de agente** pronta para uso e (2) o **estudo bruto completo** que a sustenta, com todas as fontes verbatim e citações.
+### Agent Skill + estudo aprofundado sobre a Jev, o "System One Model" da TypeSafe AI
 
-Isso não é um resumo de segunda mão. É o resultado de um processo de pesquisa em duas fases — mineração de 8 vídeos do YouTube sobre casos de uso reais + ingestão verbatim de toda a documentação oficial da TypeSafe AI — orquestrado por uma frota de subagentes de IA, com cada afirmação rastreável até a fonte original.
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
+[![Check Links](https://github.com/BFLabsAI/bf-jev-deep-research/actions/workflows/check-links.yml/badge.svg)](https://github.com/BFLabsAI/bf-jev-deep-research/actions/workflows/check-links.yml)
+[![Last commit](https://img.shields.io/github/last-commit/BFLabsAI/bf-jev-deep-research)](https://github.com/BFLabsAI/bf-jev-deep-research/commits/main)
+![Agent Skill](https://img.shields.io/badge/agent%20skill-jev--typesafe--expert-6e56cf)
+
+</div>
+
+**bf-jev-deep-research instala, com um comando, uma Agent Skill pronta para Claude Code, Cursor e Codex que ensina um agente de IA a usar corretamente a [Jev](https://typesafe.ai), o primeiro "System One Model" da TypeSafe AI** — e carrega junto o estudo bruto completo que sustenta cada afirmação da skill: 8 transcrições de vídeo analisadas, ~60 páginas da documentação oficial preservadas verbatim, e 7 documentos de síntese em português.
+
+> "Models have been superhuman at chat for years, so where is all the automation?"
+> — [Diogo Almeida](https://typesafe.ai/team), founder da TypeSafe AI, em [Introducing System One Models & Jev](./study/sources/blog-introducing-system-one-and-jev.md)
+
+Em números: **RLCD** (o método de treino da Jev) em vez de RLHF, decisões em **70–500ms** (20–200x mais rápido que um LLM frontier), custo de **US$ 42 por bilhão de tokens de input** com output gratuito, 3 primitivos de decisão (`choice`/`score`/`noul`), 4 padrões de composição documentados, 9 armadilhas conhecidas com casos reais, e mais de 500 links internos verificados automaticamente a cada mudança.
+
+---
+
+## Sumário
+
+- [Instalação](#instalação)
+- [Estrutura do repositório](#estrutura-do-repositório)
+- [O conceito do estudo](#o-conceito-do-estudo)
+- [A técnica: como esse material foi extraído e categorizado](#a-técnica-como-esse-material-foi-extraído-e-categorizado)
+- [Por que a skill sozinha não bastava](#por-que-a-skill-sozinha-não-bastava)
+- [Anatomia da skill](#anatomia-da-skill)
+- [Perguntas frequentes](#perguntas-frequentes)
+- [Manutenção](#manutenção)
+- [Licença](#licença)
 
 ---
 
@@ -61,9 +89,13 @@ Por que isso é decidido pelo instalador e não pela skill em si: a skill instal
 ```
 bf-jev-deep-research/
 ├── README.md                          # este arquivo
+├── CONTRIBUTING.md                    # como propor mudanças
+├── LICENSE                            # MIT (código) + nota sobre o material de terceiros
+├── .github/workflows/check-links.yml  # CI: valida links a cada push/PR
 ├── scripts/
 │   ├── setup-bf-jev-deep-research.sh  # instalador Mac/Linux/Git-Bash/WSL
-│   └── setup-bf-jev-deep-research.ps1 # instalador Windows nativo
+│   ├── setup-bf-jev-deep-research.ps1 # instalador Windows nativo
+│   └── check-links.py                 # verificador de integridade de links
 ├── skill/                             # a skill em si (formato SKILL.md)
 │   ├── SKILL.md
 │   └── references/
@@ -134,7 +166,9 @@ A skill instalada **referencia ativamente** a pasta `study/` (com os links já a
 
 ---
 
-## Anatomia da skill (`skill/`)
+## Anatomia da skill
+
+Tudo em `skill/`:
 
 - **`SKILL.md`** — frontmatter com `name` (`jev-typesafe-expert`) e `description` (os gatilhos — frases e situações concretas que devem fazer um agente carregar a skill, não um resumo do conteúdo). Corpo: o que é Jev/System One, quando usar vs. um LLM generativo, cheat sheet dos primitivos, regras de `state`, resumo dos padrões de composição, regra de confiança/calibração, armadilhas, SDK quickstart, preço/limites — e pointers para `study/curated/01` a `07` para quem quiser a versão completa de cada tópico.
 - **`references/primitives.md`** — schemas reais (Python/JS) de `choice`, `score`, `noul` e `state`, cardinalidade alta, batching de perguntas.
@@ -146,6 +180,34 @@ A skill instalada **referencia ativamente** a pasta `study/` (com os links já a
 
 ---
 
+## Perguntas frequentes
+
+### O que é a Jev, em uma frase?
+
+A Jev é o primeiro **System One Model** da TypeSafe AI: um modelo de IA que não gera texto, mas devolve decisões estruturadas e tipadas (`choice`, `score` ou `noul`) com probabilidade calibrada, em 70–500ms — pensado para substituir o uso de LLMs generativos caros em tarefas de classificação, roteamento e scoring de alto volume.
+
+### Essa skill substitui a documentação oficial da TypeSafe AI?
+
+Não. Ela é um manual de campo derivado da documentação oficial e de análises da comunidade, otimizado para um agente de IA agir rápido — mas sempre cita a fonte original em `study/sources/`, e a própria documentação oficial em [docs.typesafe.ai](https://docs.typesafe.ai) permanece a referência canônica e mais atualizada.
+
+### Preciso ter acesso à API da Jev pra usar essa skill?
+
+Não para instalar ou estudar o material — `study/` e `skill/references/` são texto puro, sem dependência de rede. Você só precisa de credenciais da Jev/TypeSafe AI quando for de fato *executar* código que chama a API (o `skill/references/sdk-quickref.md` cobre como configurar isso).
+
+### Funciona em Claude Code, Cursor e Codex ao mesmo tempo?
+
+Sim — o instalador detecta se o projeto usa a convenção `agents/skills/` (compartilhada entre múltiplos harnesses) e, quando existe, coloca a skill lá com um link simbólico em `.claude/skills/`, evitando duplicar arquivos entre ferramentas.
+
+### Por que o repositório carrega o estudo bruto inteiro, e não só a skill compactada?
+
+Porque uma skill precisa ser enxuta para carregar rápido no contexto do agente, o que significa que ela não carrega toda a evidência por trás de cada afirmação. O `study/` existe para quem (humano ou agente) precisar verificar uma citação, ver um benchmark completo, ou aprofundar além do que cabe no corpo da skill — ver [Por que a skill sozinha não bastava](#por-que-a-skill-sozinha-não-bastava).
+
+### Isso é afiliado à TypeSafe AI?
+
+Não. É um estudo independente sobre um produto de terceiros, feito a partir de fontes públicas (documentação oficial e vídeos do YouTube) — ver [Aviso](#licença) abaixo.
+
+---
+
 ## Manutenção
 
 Depois de editar qualquer coisa em `skill/` ou `study/`, rode o verificador de links antes de commitar:
@@ -154,7 +216,9 @@ Depois de editar qualquer coisa em `skill/` ou `study/`, rode o verificador de l
 python3 scripts/check-links.py
 ```
 
-Ele varre todo o repositório, resolve cada link markdown local contra o disco, e sai com código 1 se achar algum link quebrado (dá pra plugar como hook de pre-commit ou passo de CI).
+Ele varre todo o repositório, resolve cada link markdown local contra o disco, e sai com código 1 se achar algum link quebrado. Isso também roda automaticamente em CI (`.github/workflows/check-links.yml`) a cada push e pull request — é de onde vem o badge "Check Links" no topo deste README.
+
+Contribuições são bem-vindas — ver [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ---
 
@@ -162,6 +226,6 @@ Ele varre todo o repositório, resolve cada link markdown local contra o disco, 
 
 O código deste repositório (scripts de instalação, `SKILL.md`, guias de referência, README) está sob [MIT](./LICENSE). O material em `study/sources/` e `study/sources-youtube/` é conteúdo de terceiros preservado verbatim para fins de citação e pesquisa (documentação da TypeSafe AI e transcrições públicas do YouTube) e permanece propriedade de seus respectivos detentores — ver nota completa no arquivo [LICENSE](./LICENSE).
 
-## Aviso
+**Aviso:** este é um material de estudo pessoal sobre um produto de terceiros (TypeSafe AI / Jev), não documentação oficial, e não tem qualquer afiliação com a TypeSafe AI. Sempre confira `study/sources/` e `study/sources-youtube/` para o texto original antes de tomar decisões de arquitetura baseadas nele, e consulte [docs.typesafe.ai](https://docs.typesafe.ai) para o estado atual da documentação (produtos de IA em early access mudam rápido).
 
-Este é um material de estudo pessoal sobre um produto de terceiros (TypeSafe AI / Jev), não documentação oficial, e não tem qualquer afiliação com a TypeSafe AI. Sempre confira `study/sources/` e `study/sources-youtube/` para o texto original antes de tomar decisões de arquitetura baseadas nele, e consulte [docs.typesafe.ai](https://docs.typesafe.ai) para o estado atual da documentação (produtos de IA em early access mudam rápido).
+<sub>Última atualização: 22/09/2026.</sub>
