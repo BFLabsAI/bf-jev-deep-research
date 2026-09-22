@@ -42,7 +42,7 @@ Invoke-Expression "& { $($script.Content) } -Global"
 
 Pré-requisito nos três SOs: `git` no PATH (o instalador clona o pacote em vez de baixar um zip, para poder reinstalar/atualizar com o mesmo comando).
 
-Para reinstalar ou atualizar, rode o mesmo comando de novo (com `--global`/`-Global` se foi assim que instalou da primeira vez) — ele sobrescreve a instalação anterior.
+Para reinstalar ou atualizar, rode o mesmo comando de novo (com `--global`/`-Global` se foi assim que instalou da primeira vez). **Reinstalar não destrói nada silenciosamente**: se já existir uma instalação anterior (do pacote ou da skill), ela é renomeada para `<nome>.backup-<timestamp>` antes da nova cópia entrar — então se você tiver editado a skill instalada manualmente, essa edição fica preservada no backup. Só o backup mais recente é mantido; reinstalar de novo apaga o backup anterior (não é um histórico completo, é uma rede de segurança de uma reinstalação).
 
 ### O que o instalador decide por você, dentro da base escolhida (projeto ou `$HOME`)
 
@@ -142,8 +142,26 @@ A skill instalada **referencia ativamente** a pasta `study/` (com os links já a
 - **`references/sdk-quickref.md`** — instalação, autenticação e exemplo mínimo por primitivo nos SDKs Python e JavaScript, tratamento de erros/retries.
 - **`references/pitfalls.md`** — 9 armadilhas documentadas como regra acionável ("se X, então Y"), incluindo três casos reais: um mod de jogo que travava por falta de dados de obstáculo no `state`, um projeto de compactação de contexto que piorou o desempenho ao remover a trilha de raciocínio, e um experimento de day-trading que falhou por exigir do modelo um tipo de raciocínio multi-fonte que ele não foi desenhado para fazer.
 
+**Nota de terminologia:** o `SKILL.md` instrui explicitamente para nunca traduzir os termos técnicos de produto/API (`Jev`, `choice`, `score`, `noul`, `RLCD`, etc.), mesmo escrevendo em português — são nomes próprios, e traduzi-los quebra a correspondência com a documentação oficial e o SDK.
+
 ---
+
+## Manutenção
+
+Depois de editar qualquer coisa em `skill/` ou `study/`, rode o verificador de links antes de commitar:
+
+```bash
+python3 scripts/check-links.py
+```
+
+Ele varre todo o repositório, resolve cada link markdown local contra o disco, e sai com código 1 se achar algum link quebrado (dá pra plugar como hook de pre-commit ou passo de CI).
+
+---
+
+## Licença
+
+O código deste repositório (scripts de instalação, `SKILL.md`, guias de referência, README) está sob [MIT](./LICENSE). O material em `study/sources/` e `study/sources-youtube/` é conteúdo de terceiros preservado verbatim para fins de citação e pesquisa (documentação da TypeSafe AI e transcrições públicas do YouTube) e permanece propriedade de seus respectivos detentores — ver nota completa no arquivo [LICENSE](./LICENSE).
 
 ## Aviso
 
-Este é um material de estudo pessoal sobre um produto de terceiros (TypeSafe AI / Jev), não documentação oficial. Sempre confira `study/sources/` e `study/sources-youtube/` para o texto original antes de tomar decisões de arquitetura baseadas nele, e consulte [docs.typesafe.ai](https://docs.typesafe.ai) para o estado atual da documentação (produtos de IA em early access mudam rápido).
+Este é um material de estudo pessoal sobre um produto de terceiros (TypeSafe AI / Jev), não documentação oficial, e não tem qualquer afiliação com a TypeSafe AI. Sempre confira `study/sources/` e `study/sources-youtube/` para o texto original antes de tomar decisões de arquitetura baseadas nele, e consulte [docs.typesafe.ai](https://docs.typesafe.ai) para o estado atual da documentação (produtos de IA em early access mudam rápido).

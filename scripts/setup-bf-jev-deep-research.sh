@@ -72,6 +72,22 @@ if ! command -v git >/dev/null 2>&1; then
   exit 1
 fi
 
+# Faz backup de $1 (se existir) para "$1.backup-<timestamp>" e purga backups
+# mais antigos do mesmo alvo, mantendo só o mais recente.
+backup_if_exists() {
+  local dir="$1"
+  local label="$2"
+  if [ -e "$dir" ]; then
+    local backup="${dir}.backup-$(date +%Y%m%d%H%M%S)"
+    mv "$dir" "$backup"
+    ok "Backup de $label salvo em: $backup"
+    local parent base
+    parent="$(dirname "$dir")"
+    base="$(basename "$dir")"
+    find "$parent" -maxdepth 1 -name "${base}.backup-*" ! -path "$backup" -exec rm -rf {} + 2>/dev/null || true
+  fi
+}
+
 TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "$TMP_DIR"' EXIT
 
@@ -79,14 +95,11 @@ info "Baixando ${PKG_NAME}..."
 git clone --depth=1 --quiet "$REPO_URL" "$TMP_DIR"
 
 PKG_DEST="$BASE_DIR/$PKG_NAME"
+backup_if_exists "$PKG_DEST" "instalação anterior de $PKG_NAME"
 info "Instalando a biblioteca de referência em: $PKG_DEST"
 mkdir -p "$PKG_DEST"
-rsync -a --delete --exclude ".git" "$TMP_DIR/" "$PKG_DEST/" 2>/dev/null || {
-  rm -rf "$PKG_DEST"
-  mkdir -p "$PKG_DEST"
-  cp -R "$TMP_DIR/." "$PKG_DEST/"
-  rm -rf "$PKG_DEST/.git"
-}
+rsync -a --exclude ".git" "$TMP_DIR/" "$PKG_DEST/" 2>/dev/null || cp -R "$TMP_DIR/." "$PKG_DEST/"
+rm -rf "$PKG_DEST/.git"
 ok "bf-jev-deep-research/ instalado (skill + estudo bruto navegável)."
 
 # --- Decide onde a skill "viva" vai morar (sempre dentro da mesma $BASE_DIR
@@ -104,7 +117,7 @@ else
   DEPTH_UP="../../../"   # <base>/.claude/skills/<nome>/  ->  <base>/
 fi
 
-rm -rf "$CANONICAL_DIR"
+backup_if_exists "$CANONICAL_DIR" "skill instalada anteriormente"
 mkdir -p "$CANONICAL_DIR"
 cp -R "$PKG_DEST/skill/." "$CANONICAL_DIR/"
 
@@ -130,7 +143,13 @@ ok "Links da skill reescritos para apontar para ${PKG_NAME}/study/."
 if [ -d "$AGENTS_SKILLS" ]; then
   mkdir -p "$CLAUDE_SKILLS"
   LINK_PATH="$CLAUDE_SKILLS/$SKILL_NAME"
-  rm -rf "$LINK_PATH"
+  # Se já era um symlink de uma instalação anterior, só remove (nada a preservar).
+  # Se era uma pasta real (ex.: instalação anterior sem agents/skills), faz backup.
+  if [ -L "$LINK_PATH" ]; then
+    rm -f "$LINK_PATH"
+  else
+    backup_if_exists "$LINK_PATH" "instalação anterior de .claude/skills/$SKILL_NAME"
+  fi
   ln -s "../../agents/skills/$SKILL_NAME" "$LINK_PATH"
   ok "Symlink criado: .claude/skills/$SKILL_NAME -> agents/skills/$SKILL_NAME"
 fi

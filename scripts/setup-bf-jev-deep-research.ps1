@@ -48,6 +48,22 @@ $SkillName = "jev-typesafe-expert"
 function Info($msg) { Write-Host "==> $msg" -ForegroundColor Cyan }
 function Ok($msg)   { Write-Host "OK  $msg" -ForegroundColor Green }
 
+# Faz backup de $Path (se existir) para "$Path.backup-<timestamp>" e purga
+# backups mais antigos do mesmo alvo, mantendo so o mais recente.
+function Backup-IfExists([string]$Path, [string]$Label) {
+    if (Test-Path $Path) {
+        $stamp = Get-Date -Format "yyyyMMddHHmmss"
+        $backup = "$Path.backup-$stamp"
+        Move-Item -Path $Path -Destination $backup -Force
+        Ok "Backup de $Label salvo em: $backup"
+        $parent = Split-Path -Parent $Path
+        $base = Split-Path -Leaf $Path
+        Get-ChildItem -Path $parent -Filter "$base.backup-*" -Directory -ErrorAction SilentlyContinue |
+            Where-Object { $_.FullName -ne $backup } |
+            ForEach-Object { Remove-Item $_.FullName -Recurse -Force }
+    }
+}
+
 if ($Global) {
     $BaseDir = $HOME
     Info "Modo global -- instalando em: $BaseDir"
@@ -69,8 +85,8 @@ try {
     git clone --depth=1 --quiet $RepoUrl $TmpDir
 
     $PkgDest = Join-Path $BaseDir $PkgName
+    Backup-IfExists -Path $PkgDest -Label "instalacao anterior de $PkgName"
     Info "Instalando a biblioteca de referencia em: $PkgDest"
-    if (Test-Path $PkgDest) { Remove-Item $PkgDest -Recurse -Force }
     New-Item -ItemType Directory -Path $PkgDest | Out-Null
     Copy-Item -Path (Join-Path $TmpDir '*') -Destination $PkgDest -Recurse -Force -Exclude ".git"
     Ok "$PkgName\ instalado (skill + estudo bruto navegavel)."
@@ -89,7 +105,7 @@ try {
         Info "Sem agents\skills -- instalando direto em .claude\skills."
     }
 
-    if (Test-Path $CanonicalDir) { Remove-Item $CanonicalDir -Recurse -Force }
+    Backup-IfExists -Path $CanonicalDir -Label "skill instalada anteriormente"
     New-Item -ItemType Directory -Path $CanonicalDir | Out-Null
     Copy-Item -Path (Join-Path $PkgDest "skill\*") -Destination $CanonicalDir -Recurse -Force
 
@@ -118,7 +134,14 @@ try {
             New-Item -ItemType Directory -Path $ClaudeSkills | Out-Null
         }
         $LinkPath = Join-Path $ClaudeSkills $SkillName
-        if (Test-Path $LinkPath) { Remove-Item $LinkPath -Recurse -Force }
+        $existingItem = Get-Item $LinkPath -Force -ErrorAction SilentlyContinue
+        if ($existingItem -and $existingItem.LinkType) {
+            # Ja era uma junction/symlink de uma instalacao anterior -- so remove.
+            Remove-Item $LinkPath -Force
+        } else {
+            # Era uma pasta real (ex.: instalacao anterior sem agents/skills) -- faz backup.
+            Backup-IfExists -Path $LinkPath -Label "instalacao anterior de .claude\skills\$SkillName"
+        }
         New-Item -ItemType Junction -Path $LinkPath -Target $CanonicalDir | Out-Null
         Ok "Junction criada: .claude\skills\$SkillName -> agents\skills\$SkillName"
     }
