@@ -1,6 +1,6 @@
 ---
 name: jev-typesafe-expert
-description: "Use quando: integrar com a API da Jev/TypeSafe AI (api.typesafe.ai, docs.typesafe.ai, typesafe-sdk, @typesafe-ai/sdk); construir um roteador de decisão rápida, um classificador, um sistema de triagem/scoring/routing/moderação/guardrail; substituir um LLM generativo caro por um classificador barato e de baixa latência para volume alto e repetitivo; o usuário mencionar Jev, System One Model, RLCD, TypeSafe AI, jev-latest/jev-1.13, ou os primitivos choice/score/noul; desenhar o state e questions de uma chamada System One; decidir thresholds de confidence; fazer fan-out especulativo de perguntas, confidence-gated routing, composite scoring ou intent routing; extrair dados estruturados sem alucinação; fazer re-rank, self-consistency, guardrails de LLM ou cascatas de custo (barato para caro) com um modelo pequeno como filtro. Não use para gerar texto livre, resumos, redação, conversas ou raciocínio aberto multi-fonte — isso é trabalho de LLM generativo, não da Jev."
+description: "Use quando: integrar com a API da Jev/TypeSafe AI (docs.typesafe.ai, typesafe-sdk, @typesafe-ai/sdk); construir roteador de decisão rápida, classificador, triagem/scoring/moderação/guardrail; trocar um LLM caro por um classificador barato e de baixa latência em alto volume; o usuário mencionar Jev, System One, RLCD, TypeSafe AI, jev-latest/jev-1.13 ou os primitivos choice/score/noul; desenhar state e questions; decidir thresholds de confidence; fan-out especulativo, confidence routing, composite scoring, intent routing; extrair dados sem alucinação; re-rank, self-consistency, guardrails de LLM, cascatas de custo; usar a Jev com Claude Code, Codex ou Hermes: roteamento de modelo, seleção de skill, linter qualitativo, revisão de PR, verificação de diff, teste adversarial de UI, loop System 1/System 2. Não use para texto livre, resumos, redação, conversas ou raciocínio aberto multi-fonte — isso é trabalho de LLM generativo, não da Jev."
 tags:
   - Jev
   - TypeSafe AI
@@ -13,7 +13,7 @@ tags:
 
 Esta skill ensina como pensar e implementar corretamente com a Jev (TypeSafe AI): quando usá-la, como desenhar o `state` e as `questions`, como compor primitivos em padrões de produção, e quais armadilhas evitar. Não é curiosidade sobre a Jev — é um manual de campo para você, agente, tomar decisões de design corretas ao implementar.
 
-> **Terminologia — não traduza:** os termos abaixo são nomes próprios de produto/API e devem ficar exatamente como aparecem aqui, mesmo em texto em português — inclusive ao escrever código, configs, ou explicar a skill para o usuário. Traduzir quebra a correspondência com a documentação oficial e o SDK: `Jev`, `TypeSafe AI`, `System One`, `RLCD`, `choice`, `score`, `noul`, `state`, `confidence`, `jev-latest` / `jev-1.13`, `fan-out`, `confidence routing`, `composite scoring`, `intent routing`.
+> **Terminologia — não traduza:** os termos abaixo são nomes próprios de produto/API e devem ficar exatamente como aparecem aqui, mesmo em texto em português — inclusive ao escrever código, configs, ou explicar a skill para o usuário. Traduzir quebra a correspondência com a documentação oficial e o SDK: `Jev`, `TypeSafe AI`, `System One`, `RLCD`, `choice`, `score`, `noul`, `state`, `confidence`, `jev-latest` / `jev-1.13`, `fan-out`, `confidence routing`, `composite scoring`, `intent routing`. Transcripts e vídeos costumam grafar `noul` como "null" ou "newel" (erro de transcrição/fala): a grafia correta, a da API e do SDK, é `noul`. Ao citar um vídeo, mantenha a grafia dele entre aspas, mas escreva `noul` em código e configs.
 
 ## 1. O que é a Jev / System One, em um parágrafo
 
@@ -154,7 +154,20 @@ Cheat sheet completo (auth, tratamento de erro/retry, diferenças Python vs. JS)
 
 Fonte: [04 - Jev Typesafe Foundations, seção 2](../study/curated/04%20-%20Jev%20Typesafe%20Foundations.md).
 
-## 10. Para aprofundar
+## 10. Jev em loops de coding agent
+
+Ao montar um loop com Claude Code, Codex ou Hermes, a Jev entra como camada de reflexo (System 1) e o modelo caro continua planejando e escrevendo (System 2). Sete usos práticos, todos com `choice`/`score`/`noul` e threshold proporcional ao risco:
+
+- **Roteamento de modelo** — `choice` entre tiers (Haiku/Sonnet/Opus) a cada prompt; `confidence` baixa sobe um tier.
+- **Skill gate** — `choice` sobre o catálogo de skills antes de carregar qualquer descrição no contexto.
+- **Verificação de diff** — `noul` (resolve a tarefa? enfraqueceu um teste?) + `score` (força da verificação, superfície de risco).
+- **Linter qualitativo e review de PR** — dezenas de perguntas atômicas por unidade ou diff; só severidade alta sobe ao frontier.
+- **Teste adversarial de UI** — muitas sessões de browser em paralelo por PR, a Jev escolhendo a próxima ação.
+- **Loop System 2 calibra System 1** — o modelo lento reescreve rubricas e thresholds a partir do log de decisões.
+
+Números de vídeo (70% de economia, 10x menos tokens) são amostras pequenas ou estimativas: use como direção e valide com golden dataset seu. Receitas completas, regras de threshold e tabela de faixas de score: [references/coding-agents.md](./references/coding-agents.md). Contexto: vídeos [A](../study/sources-youtube/Jev%20_%20Claude%20Code_%20Architecting%20the%20Ultimate%20Low-Cost%20Agentic%20Coding%20Loop.md) e [B](../study/sources-youtube/Jev_%20Revolutionizing%20Claude%20Code%20and%20Agentic%20Workflows%20with%20System%201%20AI.md).
+
+## 11. Para aprofundar
 
 Estes 7 documentos são a fonte de verdade mais extensa por trás desta skill — consulte-os para casos de uso completos, benchmarks, evidências técnicas e referência de API/SDK:
 
@@ -165,3 +178,5 @@ Estes 7 documentos são a fonte de verdade mais extensa por trás desta skill �
 - [05 - Jev Patterns](../study/curated/05%20-%20Jev%20Patterns.md) — os 4 padrões centrais + 18 cookbooks prontos.
 - [06 - Jev client Sdk's Overview](../study/curated/06%20-%20Jev%20client%20Sdk's%20Overview.md) — SDKs Python/JS em detalhe.
 - [07 - Jev API Reference Overview](../study/curated/07%20-%20Jev%20API%20Reference%20Overview.md) — mapa da referência de API HTTP e SDKs.
+
+Referências da skill: [primitives.md](./references/primitives.md), [patterns.md](./references/patterns.md), [sdk-quickref.md](./references/sdk-quickref.md), [pitfalls.md](./references/pitfalls.md) e [coding-agents.md](./references/coding-agents.md) (playbook para Claude Code, Codex e Hermes, com base nos vídeos [A](../study/sources-youtube/Jev%20_%20Claude%20Code_%20Architecting%20the%20Ultimate%20Low-Cost%20Agentic%20Coding%20Loop.md) e [B](../study/sources-youtube/Jev_%20Revolutionizing%20Claude%20Code%20and%20Agentic%20Workflows%20with%20System%201%20AI.md)).

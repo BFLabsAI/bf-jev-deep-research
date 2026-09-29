@@ -18,7 +18,7 @@ Esse contrato deliberadamente estreito é a fonte da força da Jev (latência de
 
 É exatamente aí que entram os **padrões de composição**: formas repetíveis de organizar perguntas, thresholds e ramificações de código em torno dos primitivos da Jev, transformando respostas atômicas em decisões de sistema completas. A documentação oficial da TypeSafe descreve isso assim: "Learning to think in terms of discrete, atomic decisions that compose into complex system behavior is a key skill for getting the most out of TypeSafe" ([Patterns — índice](../sources/patterns-index.md)).
 
-Este documento cobre os **4 padrões centrais** documentados pela TypeSafe, os **demos** que os ilustram em código real, e um catálogo de **18 cookbooks** — receitas prontas que aplicam esses padrões a problemas concretos (triagem, extração, guardrails, ranking, RAG, etc).
+Este documento cobre os **4 padrões centrais** documentados pela TypeSafe (mais **2 padrões de comunidade**, rotulados como tal), os **demos** que os ilustram em código real, e um catálogo de **18 cookbooks** — receitas prontas que aplicam esses padrões a problemas concretos (triagem, extração, guardrails, ranking, RAG, etc).
 
 | Padrão | O que faz | Benefícios |
 | --- | --- | --- |
@@ -26,10 +26,12 @@ Este documento cobre os **4 padrões centrais** documentados pela TypeSafe, os *
 | Confidence-Gated Routing | Usa a confiança como segundo eixo de decisão para sistemas mais seguros | Confiabilidade, Segurança |
 | Composite Scoring | Combina várias dimensões de análise num único score | Custo, Confiabilidade, Velocidade |
 | Intent Routing | Classifica a intenção do usuário e roteia para o handler apropriado | Custo, Velocidade |
+| System 2 calibra System 1 *(padrão de comunidade)* | Um modelo lento revisa o log de decisões da Jev e reescreve critérios, exemplos e thresholds | Confiabilidade ao longo do tempo |
+| Reflex layer / cascata de screening *(padrão de comunidade)* | Centenas de micro-perguntas em paralelo; só os itens de maior severidade sobem para o modelo frontier | Custo, Velocidade |
 
-Fonte: [Patterns — índice](../sources/patterns-index.md).
+Fonte dos 4 primeiros padrões: [Patterns — índice](../sources/patterns-index.md). Os dois últimos (seções 2.5 e 2.6) **não** fazem parte dos padrões oficiais: vêm de relatos de comunidade em vídeo — [vídeo A](../sources-youtube/Jev%20_%20Claude%20Code_%20Architecting%20the%20Ultimate%20Low-Cost%20Agentic%20Coding%20Loop.md) e [vídeo B](../sources-youtube/Jev_%20Revolutionizing%20Claude%20Code%20and%20Agentic%20Workflows%20with%20System%201%20AI.md) — e por isso cada dado deles leva um rótulo de evidência: **[Oficial]**, **[Reportado em vídeo]** ou **[Estimativa do apresentador]**.
 
-## 2. Os 4 padrões centrais
+## 2. Padrões de composição: 4 oficiais e 2 de comunidade
 
 ### 2.1 Speculative Fan-Out
 
@@ -163,6 +165,99 @@ flowchart TD
 
 Fonte: [Intent Routing](../sources/patterns-intent-routing.md).
 
+### 2.5 System 2 calibra System 1 (loop de calibração) — padrão de comunidade
+
+> **Evidência:** este padrão não está na documentação oficial. Vem de relatos em vídeo ([vídeo A](../sources-youtube/Jev%20_%20Claude%20Code_%20Architecting%20the%20Ultimate%20Low-Cost%20Agentic%20Coding%20Loop.md), [vídeo B](../sources-youtube/Jev_%20Revolutionizing%20Claude%20Code%20and%20Agentic%20Workflows%20with%20System%201%20AI.md)) e os exemplos abaixo são demos, não benchmarks. **[Reportado em vídeo]**
+
+**Problema que resolve:** decisões contínuas ligadas a um `if` dependem de critérios, exemplos e thresholds que, no começo, são um palpite informado e depois envelhecem quando o contexto muda. Recalibrar à mão não escala, e pedir a um modelo lento para decidir cada item anula o motivo de usar a Jev.
+
+**Como funciona:** dois laços com velocidades diferentes. No laço rápido (System 1), a Jev avalia cada evento com `noul`, `choice` ou `score`, o código aplica os thresholds e cada decisão é gravada junto com o resultado observado. No laço lento (System 2), periodicamente ou depois de um contratempo, um modelo generativo lê esse log, encontra os erros e reescreve `criteria`, exemplos e thresholds, que entram na próxima versão das perguntas. O vídeo B resume a recomendação prática no mesmo sentido: a melhor forma de usar a Jev hoje é combiná-la com um modelo de System 2. **[Reportado em vídeo]**
+
+```mermaid
+flowchart TD
+    A[Evento ou estado atual] --> B["Jev avalia com noul choice score"]
+    B --> C{Threshold no codigo}
+    C -->|acima| D[Executa a acao]
+    C -->|abaixo| E[Fila de revisao ou acao padrao]
+    D --> F[Log de decisao e resultado]
+    E --> F
+    F --> G["Modelo System 2 revisa o log periodicamente"]
+    G --> H["Reescreve criterios exemplos e thresholds"]
+    H --> B
+```
+
+| Exemplo | System 2 (lento) | System 1 (Jev) | Evidência |
+| --- | --- | --- | --- |
+| Minecraft | GPT define a estratégia (abrigo antes da noite, mineração quando houver ferramentas e comida) e revisa a cada ~2 minutos ou após um revés como a morte do personagem; o jogo pausa enquanto ele avalia | Jev executa a tática (coletar madeira, craftar fornalha, fugir de creepers, trocar de tarefa conforme o estado); um controller executa a entrada física | **[Reportado em vídeo]** demo do vídeo A: o conjunto chegou ao Nether com uma picareta de diamante |
+| Trading bot | Revisa periodicamente decisões e resultados e reescreve critérios, exemplos ou thresholds | `noul` simples enviado à API; `if` executa compra ou venda | **[Reportado em vídeo]** o próprio vídeo chama de exemplo ilustrativo; não é estratégia validada (ver a seção de trading do [catálogo de casos de uso](./01%20-%20Jev%20Use%20Cases.md)) |
+| Rubricas de linter e de teste de UI | Avalia as detecções da Jev, refina as rubricas e escolhas e deixa a Jev rodar novas passadas | Jev roda as perguntas sobre código ou sobre o resultado do browser | **[Reportado em vídeo]** vídeo A |
+
+No Minecraft, as entradas da Jev eram as metas intermediárias, o estado atual (vida, fome, hora do dia, progresso da mineração), o histórico recente de eventos e uma lista de múltipla escolha com as tarefas disponíveis, ou seja, uma pergunta `choice` sobre um `state` estruturado. **[Reportado em vídeo]**
+
+Esqueleto ilustrativo do laço (não vem da documentação oficial; `strong_model_review` é um nome hipotético para a chamada ao modelo lento):
+
+```python
+# Laço rápido: decide e registra
+answer = ts.system_one(state=event, questions=QUESTIONS, model=MODEL).answers["should_act"]
+acted = answer.noul >= ACT_THRESHOLD
+decision_log.append({"state": event, "noul": answer.noul, "acted": acted, "outcome": None})
+
+# Laço lento: revisa o log e devolve novas versões de criterios e thresholds
+new_config = strong_model_review(decision_log, QUESTIONS, ACT_THRESHOLD)
+```
+
+**Quando NÃO usar:**
+
+- Sem um log de decisões e resultados, o System 2 não tem o que revisar. Guarde sempre o log.
+- Quando o resultado só aparece muito depois, ou nunca, não há verdade observável para calibrar.
+- Em decisões financeiras ou irreversíveis: recalibrar em produção sem validação é arriscado. O exemplo de trading é ilustrativo.
+- Nunca promova critérios reescritos pelo modelo lento sem testá-los antes contra um conjunto de casos com resposta conhecida (golden dataset). Reescrever thresholds sem essa checagem pode piorar o sistema.
+
+### 2.6 Reflex layer / cascata de screening — padrão de comunidade
+
+> **Evidência:** aplicação de comunidade de estruturas que a documentação oficial já tem em outros contextos (cascata de custo e guardrails). Os números vêm do [vídeo A](../sources-youtube/Jev%20_%20Claude%20Code_%20Architecting%20the%20Ultimate%20Low-Cost%20Agentic%20Coding%20Loop.md) e são de demos, não de um benchmark controlado.
+
+**Problema que resolve:** revisar tudo com um modelo frontier é caro e lento, seja um diff de PR, uma codebase inteira, um lote de comentários ou a saída de um agente. Quase todos os itens são irrelevantes; o custo está em olhar para todos com o modelo caro.
+
+**Como funciona:** uma camada reflexo avalia cada item com dezenas ou centenas de micro-perguntas atômicas em paralelo, `noul` para invariantes e riscos e `score` para severidade ou força de verificação. O código agrega as respostas, aplica thresholds (como no [Confidence-Gated Routing](../sources/patterns-confidence-routing.md)) e só sobem para o modelo frontier ou para um humano os itens de maior severidade ou de `confidence` baixa. É a mesma estrutura de cascata de custo do cookbook [SDE Cascade](../sources/cookbook-sde-cascade.md) (modelo barato extrai, a Jev verifica campo a campo com `noul`, só os suspeitos escalam) e da triagem do cookbook [LLM Guardrails](../sources/cookbook-llm-guardrails.md) (uma chamada com vários `noul` de risco mais um `score` de severidade), aplicada aqui a revisão de código em vez de extração ou moderação. Para nomear as perguntas, vale reaproveitar a convenção `campo::risco` do SDE Cascade (`questions[f"{name}::hallucinated"]`), por exemplo `diff::weakened_test`. Isso é uma sugestão de uso, não parte do cookbook.
+
+```mermaid
+flowchart LR
+    A["Diff, PR, codebase ou lote"] --> B["Jev: micro-perguntas em paralelo"]
+    B --> C{Alguma sinalizada acima do threshold?}
+    C -->|nao| D[Segue sem revisao cara]
+    C -->|sim| E["Severidade em score"]
+    E --> F{Severidade alta ou confidence baixa?}
+    F -->|sim| G["Modelo frontier ou humano revisa"]
+    F -->|nao| H[Registra como pista de baixa prioridade]
+```
+
+| Aplicação | Micro-perguntas | Dados reportados | Evidência |
+| --- | --- | --- | --- |
+| Qualidade de comentários | O comentário é preciso e útil? (`// multiply the value by two` é preciso mas redundante) | 150 comentários em 9,3 s por cerca de 1 centavo | **[Reportado em vídeo]** |
+| Idem, codebase inteira | Mesmas perguntas | Custo estimado de 57 centavos e ~1.700 comentários candidatos a reescrita por agentes Haiku | **[Estimativa do apresentador]** |
+| Linters qualitativos | O nome da função descreve tudo o que ela faz, incluindo efeitos colaterais? Que valor está sendo logado? (segredos ou dados financeiros viram erro, PII vira aviso) | Regras rodando a cada PR | **[Reportado em vídeo]** |
+| Code smells | Código duplicado, código morto, números e strings mágicos | 28 milhões de tokens de input por US$ 1,19 | **[Reportado em vídeo]** |
+| Review de PR | ~100 perguntas por diff, com os itens sinalizados repassados ao agente de código principal | Redução de ~10x nos tokens de review, estimada no próprio vídeo | perguntas: **[Reportado em vídeo]**; 10x: **[Estimativa do apresentador]** |
+| Teste adversarial de UI | Sessões de browser em paralelo (Browser Use mais Jev) percorrem caminhos de borda e devolvem os erros ao modelo de código | Descrito como capacidade: dezenas de sessões, com o vídeo falando em centenas ou milhares por PR; nessa escala o custo de tokens fica desprezível e o gargalo vira o compute de sandbox | **[Reportado em vídeo]** sem benchmark |
+
+Verificação do diff de um agente: a mesma chamada faz as perguntas em paralelo, e o código decide o que fazer com cada resposta.
+
+| Pergunta (relatada no vídeo A) | Primitivo | Ação se sinalizada (sugestão de uso) |
+| --- | --- | --- |
+| O diff resolve a tarefa pedida? | `noul` | Devolver ao agente com o motivo |
+| Algum teste foi enfraquecido? | `noul` | Bloquear e subir para revisão |
+| Quão forte é a verificação feita? | `score` | Pedir mais verificação abaixo de um piso |
+| Qual a superfície de risco da mudança? | `score` | Escalonar para modelo frontier ou humano nas faixas altas |
+
+**Ressalvas obrigatórias:** os flags do screening são pistas para revisão, não veredito, e a probabilidade nunca deve ser o único gate de segurança. Um diff, um PR ou um comentário de código é conteúdo de terceiros dentro do `state`, e a própria documentação da TypeSafe lista a vulnerabilidade a conteúdo adversarial dentro do `state` entre as limitações conhecidas ([Jev 1.13 Jaggedness](../sources/model-jaggedness-jev-1-13.md)). Combine o screening com checagens determinísticas antes de qualquer ação sensível, e calibre os thresholds contra um golden dataset do seu projeto. **[Oficial]** para a limitação; a recomendação de combinar é nossa.
+
+**Quando NÃO usar:**
+
+- Com poucos itens, revisar direto com um modelo forte é mais simples e não justifica a camada extra.
+- Quando o problema exige raciocínio de vários saltos ou análise entre arquivos: a Jev perde acurácia com múltiplos saltos de indireção (ver [Jev 1.13 Jaggedness](../sources/model-jaggedness-jev-1-13.md)); quebre em perguntas atômicas ou deixe para o modelo frontier.
+- Quando um falso negativo é inaceitável e não há revisão a jusante: o screening reduz custo, não substitui o gate final.
+
 ## 3. Demos: padrões de uso real
 
 A TypeSafe mantém uma seção de demos interativos ilustrando os padrões acima em aplicações completas ([Demos — índice](../sources/demos-index.md)).
@@ -193,7 +288,7 @@ A TypeSafe documenta 18 cookbooks (receitas) que aplicam os primitivos e padrõe
 | [Semantic Find](../sources/cookbook-semantic-find.md) | Buscar semanticamente dentro de um documento grande (até 255 linhas) e saber quando a resposta simplesmente não existe | `choice`, `noul` | Uma pergunta `choice` rankeia linhas por relevância; uma pergunta `noul` separada confirma se a resposta de fato existe no documento |
 | [Autoformat (Structure Recovery)](../sources/cookbook-autoformat.md) | Texto colado perdeu formatação Markdown (quebras de linha erradas, sem cabeçalhos/listas) | `noul`, `choice` | Pipeline de 2 passagens: `noul` decide se linhas adjacentes devem ser unidas; `choice` classifica cada bloco final (título, parágrafo, lista, código, etc) |
 | [Function Calling](../sources/cookbook-function-calling.md) | Converter linguagem natural em chamadas de função tipadas, com argumentos de conjunto fechado | `choice`, `noul` | Cada argumento vira uma pergunta com opções descritas em linguagem natural; a confiança reportada é a do argumento menos certo da chamada, não um produto de probabilidades |
-| [Skill Suggestion](../sources/cookbook-skill-suggestion.md) | Agente com 182+ skills erra a seleção porque descrições truncadas parecem idênticas | `choice`, `noul` | Duas rodadas de progressive disclosure: `choice` amplo rankeia todas as skills e é filtrado por 3 `noul` de gate; top-3 são reavaliadas com descrição completa — reduz carregamentos errados de 16.8% para 7.3% |
+| [Skill Suggestion](../sources/cookbook-skill-suggestion.md) | Agente com 182+ skills erra a seleção porque descrições truncadas parecem idênticas | `choice`, `noul` | Duas rodadas de progressive disclosure: `choice` amplo rankeia todas as skills e é filtrado por 3 `noul` de gate; top-3 são reavaliadas com descrição completa — reduz carregamentos errados de 16.8% para 7.3%. **Confirmação em vídeo:** o [vídeo A](../sources-youtube/Jev%20_%20Claude%20Code_%20Architecting%20the%20Ultimate%20Low-Cost%20Agentic%20Coding%20Loop.md) cita esse mesmo cookbook oficial (agente Hermes, 182 skills): erro de carregamento de 17% sem a Jev e 7.3% com as sugestões dela usando um modelo Haiku, além de ~10 mil tokens economizados por prompt **[Reportado em vídeo]**; o [vídeo B](../sources-youtube/Jev_%20Revolutionizing%20Claude%20Code%20and%20Agentic%20Workflows%20with%20System%201%20AI.md) mediu 145 skills do próprio workspace em 14 testes: Opus ~30 s contra Jev ~5 s **[Reportado em vídeo]** |
 | [Entity Alignment](../sources/cookbook-entity-alignment.md) | Decidir se dois registros de fontes diferentes são o mesmo produto (merge, descartar, ou escalar) | `score`, `noul` | Um `score` de 3 níveis semânticos (diferente / relacionado / mesmo produto) resolve o julgamento principal; `noul`s por campo dão detalhe para curadoria humana |
 | [Classifying RAG Passages](../sources/cookbook-classifying-rag-passages.md) | Passagens recuperadas num pipeline RAG trazem ruído, irrelevância ou contradição | `noul` | Estágio de classificação entre retrieval e geração: 4 perguntas `noul` (relevância, evidência utilizável, contradição, tentativa de prompt injection) decidem incluir, sinalizar como conflitante, ou excluir cada passagem |
 | [Citation Check](../sources/cookbook-citation-check.md) | Verificar se citações geradas por LLM são reais e realmente suportam a afirmação feita | `choice` | Correspondência exata de string localiza a citação no texto-fonte; `choice` classifica a relação (supports / contradicts / says_nothing) — mapeada para verified / contradicted / unsupported / fabricated |
@@ -300,5 +395,11 @@ Todas as afirmações factuais acima foram fundamentadas nos seguintes documento
 - [Hierarchical Classification](../sources/cookbook-hierarchical-classification.md)
 - [Autoresearch Feature Discovery](../sources/cookbook-autoresearch-feature-discovery.md)
 - [Classification using Confidence](../sources/cookbook-classification-using-confidence.md)
+- [Jev 1.13 Jaggedness](../sources/model-jaggedness-jev-1-13.md) (limitações conhecidas, citada nas seções 2.5 e 2.6)
+
+Fontes de comunidade (não oficiais), usadas apenas nas seções 2.5 e 2.6 e na nota de Skill Suggestion:
+
+- [Jev + Claude Code: Architecting the Ultimate Low-Cost Agentic Coding Loop](../sources-youtube/Jev%20_%20Claude%20Code_%20Architecting%20the%20Ultimate%20Low-Cost%20Agentic%20Coding%20Loop.md) (vídeo A)
+- [Jev: Revolutionizing Claude Code and Agentic Workflows with System 1 AI](../sources-youtube/Jev_%20Revolutionizing%20Claude%20Code%20and%20Agentic%20Workflows%20with%20System%201%20AI.md) (vídeo B)
 
 **Nota de honestidade:** todas as 26 URLs solicitadas (7 da Parte A + 19 da Parte B) foram acessadas com sucesso via WebFetch e ingeridas como documentos-fonte locais antes de serem citadas aqui. Nenhuma página retornou 404 ou vazio. Os cookbooks da Parte B foram capturados em versão resumida (título, problema, primitivo(s), ideia central e trecho de código/schema), conforme instruído, para não estourar o orçamento de contexto — não como texto integral verbatim.

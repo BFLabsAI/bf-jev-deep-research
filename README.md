@@ -11,12 +11,12 @@
 
 </div>
 
-**bf-jev-deep-research instala, com um comando, uma Agent Skill pronta para Claude Code, Cursor e Codex que ensina um agente de IA a usar corretamente a [Jev](https://typesafe.ai), o primeiro "System One Model" da TypeSafe AI** — e carrega junto o estudo bruto completo que sustenta cada afirmação da skill: 8 transcrições de vídeo analisadas, ~60 páginas da documentação oficial preservadas verbatim, e 7 documentos de síntese em português.
+**bf-jev-deep-research instala, com um comando, uma Agent Skill pronta para Claude Code, Cursor e Codex que ensina um agente de IA a usar corretamente a [Jev](https://typesafe.ai), o primeiro "System One Model" da TypeSafe AI** — e carrega junto o estudo bruto completo que sustenta cada afirmação da skill: 10 transcrições de vídeo analisadas, ~60 páginas da documentação oficial preservadas verbatim, e 7 documentos de síntese em português.
 
 > "Models have been superhuman at chat for years, so where is all the automation?"
 > — [Diogo Almeida](https://typesafe.ai/team), founder da TypeSafe AI, em [Introducing System One Models & Jev](./study/sources/blog-introducing-system-one-and-jev.md)
 
-Em números: **RLCD** (o método de treino da Jev) em vez de RLHF, decisões em **70–500ms** (20–200x mais rápido que um LLM frontier), custo de **US$ 42 por bilhão de tokens de input** com output gratuito, 3 primitivos de decisão (`choice`/`score`/`noul`), 4 padrões de composição documentados, 9 armadilhas conhecidas com casos reais, e mais de 500 links internos verificados automaticamente a cada mudança.
+Em números: **RLCD** (o método de treino da Jev) em vez de RLHF, decisões em **70–500ms** (20–200x mais rápido que um LLM frontier), custo de **US$ 42 por bilhão de tokens de input** com output gratuito, 3 primitivos de decisão (`choice`/`score`/`noul`), 6 padrões de composição (4 oficiais + 2 da comunidade), 12 armadilhas conhecidas com casos reais, e mais de 500 links internos verificados automaticamente a cada mudança.
 
 ---
 
@@ -102,7 +102,8 @@ bf-jev-deep-research/
 │       ├── primitives.md              # schemas completos de choice/score/noul/state
 │       ├── patterns.md                # os 4 padrões de composição + cookbooks
 │       ├── sdk-quickref.md            # cheat sheet dos SDKs Python/JS
-│       └── pitfalls.md                # armadilhas conhecidas, com casos reais
+│       ├── pitfalls.md                # armadilhas conhecidas, com casos reais
+│       └── coding-agents.md          # playbook: Jev em loops de coding agent (Claude Code, Codex)
 └── study/                             # o estudo bruto completo (fonte de verdade)
     ├── curated/                       # 7 documentos de síntese, em português
     │   ├── 01 - Jev Use Cases.md
@@ -112,7 +113,7 @@ bf-jev-deep-research/
     │   ├── 05 - Jev Patterns.md
     │   ├── 06 - Jev client Sdk's Overview.md
     │   └── 07 - Jev API Reference Overview.md
-    ├── sources-youtube/                # 8 transcrições brutas (YouTube), fase 1
+    ├── sources-youtube/                # 10 transcrições brutas (YouTube), fases 1 e 3
     └── sources/                        # ~60 páginas oficiais da TypeSafe AI, verbatim, fase 2
 ```
 
@@ -124,14 +125,14 @@ A Jev é um modelo de IA fundamentalmente diferente de um LLM generativo: em vez
 
 Este repositório nasceu de uma pergunta prática: *"o que exatamente dá para fazer com isso, e como faço direito?"* — e virou um estudo em duas camadas:
 
-1. **O que a comunidade já está construindo** (`study/sources-youtube/` + `study/curated/01 - Jev Use Cases.md`): 8 vídeos analisando implementações reais — roteamento de e-mail, triagem de suporte, scoring de leads, automação de browser, compactação de contexto de agentes, linters semânticos, trading, etc. — categorizados em 7 domínios, com números e citações, não só a lista de features do fabricante.
+1. **O que a comunidade já está construindo** (`study/sources-youtube/` + `study/curated/01 - Jev Use Cases.md`): 10 vídeos analisando implementações reais — roteamento de e-mail, triagem de suporte, scoring de leads, automação de browser, compactação de contexto de agentes, linters semânticos, trading, etc. — categorizados em 7 domínios, com números e citações, não só a lista de features do fabricante.
 2. **O que a TypeSafe AI realmente documenta** (`study/sources/` + `study/curated/02` a `07`): a tese oficial por trás do modelo (RLCD, System 1 vs. System 2), os primitivos técnicos (`choice`/`score`/`noul`/`state`), os padrões de composição recomendados, os SDKs e a referência de API — tudo isso extraído **verbatim** da documentação oficial (docs.typesafe.ai) e do blog de lançamento, não parafraseado de memória.
 
 ---
 
 ## A técnica: como esse material foi extraído e categorizado
 
-O processo não foi "peça para um LLM resumir 8 vídeos e a doc oficial". Foi um pipeline de várias etapas, cada uma desenhada para um problema específico de fidelidade:
+O processo não foi "peça para um LLM resumir 10 vídeos e a doc oficial". Foi um pipeline de várias etapas, cada uma desenhada para um problema específico de fidelidade:
 
 ### Fase 1 — Categorização de casos de uso reais (a partir de transcrições)
 
@@ -150,6 +151,15 @@ O motivo de paralelizar por *categoria* (não por vídeo) é simples: um caso de
 
 O ponto central da Fase 2 não é só "buscar a documentação" — é que **paráfrase automática de LLM introduz erros sutis silenciosamente**, e o processo aqui foi desenhado para detectar isso e corrigir com uma segunda fonte independente, em vez de confiar na primeira passada.
 
+
+### Fase 3 — Atualização incremental (29/09/2026)
+
+Este repositório não é um retrato congelado. Em 29/09/2026 entraram 2 vídeos novos sobre uso da Jev em loops de coding agent (Claude Code, Codex), e o mesmo rigor da Fase 2 foi aplicado:
+
+1. **Análise antes de editar**: cada afirmação nova dos vídeos foi comparada com a documentação oficial já ingerida — e isso pegou uma divergência real (um vídeo diz que `score` aceita 11 níveis; a doc oficial diz até 10, e vale a oficial) e um erro nosso (o doc 04 dizia que OpenRouter e Vercel AI Gateway eram "não confirmados", mas a doc oficial do SDK Python já os mostrava).
+2. **Um agente por arquivo**, sem escrita concorrente no mesmo documento, com auditoria de links ao final de cada um.
+3. **Nível de evidência explícito** nas entradas novas — **[Oficial]**, **[Reportado em vídeo]** ou **[Estimativa do apresentador]** — para separar o que a TypeSafe documenta do que é medição ou anedota de terceiros.
+4. Sincronização vault → repositório com reescrita de links e verificação (`scripts/check-links.py`) antes do commit.
 ---
 
 ## Por que a skill sozinha não bastava
@@ -174,7 +184,8 @@ Tudo em `skill/`:
 - **`references/primitives.md`** — schemas reais (Python/JS) de `choice`, `score`, `noul` e `state`, cardinalidade alta, batching de perguntas.
 - **`references/patterns.md`** — os 4 padrões de composição recomendados (fan-out especulativo, confidence-gated routing, composite scoring, intent routing), com diagramas e a tabela de cookbooks oficiais mais úteis como receita pronta.
 - **`references/sdk-quickref.md`** — instalação, autenticação e exemplo mínimo por primitivo nos SDKs Python e JavaScript, tratamento de erros/retries.
-- **`references/pitfalls.md`** — 9 armadilhas documentadas como regra acionável ("se X, então Y"), incluindo três casos reais: um mod de jogo que travava por falta de dados de obstáculo no `state`, um projeto de compactação de contexto que piorou o desempenho ao remover a trilha de raciocínio, e um experimento de day-trading que falhou por exigir do modelo um tipo de raciocínio multi-fonte que ele não foi desenhado para fazer.
+- **`references/pitfalls.md`** — 12 armadilhas documentadas como regra acionável ("se X, então Y"), incluindo três casos reais: um mod de jogo que travava por falta de dados de obstáculo no `state`, um projeto de compactação de contexto que piorou o desempenho ao remover a trilha de raciocínio, e um experimento de day-trading que falhou por exigir do modelo um tipo de raciocínio multi-fonte que ele não foi desenhado para fazer.
+- **`references/coding-agents.md`** — playbook para usar a Jev em loops de coding agent (Claude Code, Codex, Hermes): roteamento de modelo, skill gate, verificação de diff, linter qualitativo, review de PR como reflex layer, teste adversarial de UI e o loop System 2 calibra System 1 — cada receita com o nível de evidência dos números (oficial, reportado em vídeo ou estimativa do apresentador).
 
 **Nota de terminologia:** o `SKILL.md` instrui explicitamente para nunca traduzir os termos técnicos de produto/API (`Jev`, `choice`, `score`, `noul`, `RLCD`, etc.), mesmo escrevendo em português — são nomes próprios, e traduzi-los quebra a correspondência com a documentação oficial e o SDK.
 
@@ -202,6 +213,10 @@ Sim — o instalador detecta se o projeto usa a convenção `agents/skills/` (co
 
 Porque uma skill precisa ser enxuta para carregar rápido no contexto do agente, o que significa que ela não carrega toda a evidência por trás de cada afirmação. O `study/` existe para quem (humano ou agente) precisar verificar uma citação, ver um benchmark completo, ou aprofundar além do que cabe no corpo da skill — ver [Por que a skill sozinha não bastava](#por-que-a-skill-sozinha-não-bastava).
 
+### O que acontece quando um vídeo contradiz a documentação oficial?
+
+Vale a documentação oficial, e a divergência fica registrada. Exemplo real: um vídeo afirma que `score` aceita 11 níveis, enquanto a doc oficial diz até 10 — o `study/curated/01 - Jev Use Cases.md` tem uma subseção "Divergências entre fontes" listando esses casos, e as entradas vindas de vídeos levam o rótulo **[Reportado em vídeo]** ou **[Estimativa do apresentador]**.
+
 ### Isso é afiliado à TypeSafe AI?
 
 Não. É um estudo independente sobre um produto de terceiros, feito a partir de fontes públicas (documentação oficial e vídeos do YouTube) — ver [Aviso](#licença) abaixo.
@@ -228,4 +243,4 @@ O código deste repositório (scripts de instalação, `SKILL.md`, guias de refe
 
 **Aviso:** este é um material de estudo pessoal sobre um produto de terceiros (TypeSafe AI / Jev), não documentação oficial, e não tem qualquer afiliação com a TypeSafe AI. Sempre confira `study/sources/` e `study/sources-youtube/` para o texto original antes de tomar decisões de arquitetura baseadas nele, e consulte [docs.typesafe.ai](https://docs.typesafe.ai) para o estado atual da documentação (produtos de IA em early access mudam rápido).
 
-<sub>Última atualização: 22/09/2026.</sub>
+<sub>Última atualização: 29/09/2026.</sub>
