@@ -34,28 +34,6 @@ flowchart LR
     C["Jev<br/>('System 1')<br/>amostragem paralela"] -->|"otimizado com RLCD"| D["Decisão tipada +<br/>probabilidade calibrada"]
 ```
 
-## Como a comunidade usa System 1 + System 2: o loop de calibração
-
-Os dois vídeos mais recentes analisados ([Jev + Claude Code: Architecting the Ultimate Low-Cost Agentic Coding Loop](../sources-youtube/Jev%20_%20Claude%20Code_%20Architecting%20the%20Ultimate%20Low-Cost%20Agentic%20Coding%20Loop.md) e [Jev: Revolutionizing Claude Code and Agentic Workflows with System 1 AI](../sources-youtube/Jev_%20Revolutionizing%20Claude%20Code%20and%20Agentic%20Workflows%20with%20System%201%20AI.md)) convergem numa mesma tese prática: o melhor uso da Jev não é substituir o modelo lento, e sim **combinar os dois**. **[Reportado em vídeo]**
-
-O padrão descrito é um loop de calibração: o modelo lento (System 2) define as rubricas, revisa periodicamente as decisões registradas e reescreve critérios, exemplos e thresholds; a Jev (System 1) roda continuamente em segundo plano tomando as decisões rápidas dentro de `if`-statements. A analogia usada no vídeo A é a de aprender a dirigir: no começo é uma atividade de System 2 (atenção deliberada a espelhos, marchas e sinais); com prática numa rota conhecida vira reflexo de System 1; numa rota desconhecida a tarefa volta para System 2. **[Reportado em vídeo]**
-
-- **Minecraft** (vídeo A): um modelo GPT cuida da estratégia (System 2) e a Jev cuida da tática (System 1), com um modelo controlador executando as entradas físicas. A hierarquia foi: meta do usuário, estratégia do GPT com revisão a cada dois minutos ou após contratempos (como a morte do personagem), tática da Jev e controlador. A entrada da Jev continha metas intermediárias, estado (vida, fome, hora do dia, progresso de mineração), histórico recente de eventos e uma lista de tarefas de múltipla escolha. O experimento terminou no Nether com uma picareta de diamante. **[Reportado em vídeo]**
-- **Trading** (vídeo A): a Jev devolve probabilidades e `if`-statements executam compra/venda; um modelo mais profundo revisa estratégia, critérios e thresholds a partir das decisões e resultados registrados. O próprio apresentador trata o trading só como ilustração de tempo real, e outro vídeo do corpus relata resultado ruim nesse uso. **[Reportado em vídeo]**
-
-```mermaid
-flowchart LR
-    S2["System 2: modelo lento define rubricas e thresholds"] -->|"criterios e exemplos"| S1["System 1: Jev decide em milissegundos"]
-    S1 -->|"decisoes e resultados registrados"| L["Registro de decisoes"]
-    L -->|"revisao periodica"| S2
-```
-
-### Escada de adoção (vídeo B)
-
-O vídeo B organiza os usos em três níveis de adoção: **Nível 1** — agente pessoal (roteamento de modelo e seleção de skill, para reduzir consumo de tokens e latência); **Nível 2** — automações de negócio de alto volume (triagem de e-mails, detecção de fraude em faturas, moderação, triagem de reembolsos, previsão de churn); **Nível 3** — aplicativos novos que só se tornam viáveis pela latência e pelo custo, como busca semântica em bibliotecas de mídia e extensões que classificam o DOM em tempo real. **[Reportado em vídeo]**
-
-O mesmo vídeo traz dois dados de contexto: o post de lançamento do Diogo teria alcançado cerca de 38 milhões de visualizações, e, segundo o vídeo, a tabela de preços coloca a Jev em torno de 24 vezes mais barata que um modelo Haiku e de 230 vezes mais barata que um modelo da classe Sonnet. Os nomes de modelo do resumo automático desse vídeo são inconsistentes com o restante do corpus, então trate a comparação como ordem de grandeza, não como medida. **[Reportado em vídeo]**
-
 ## RLCD explicado: o que é e como difere de RLHF/RLVR
 
 A documentação de conceitos descreve três abordagens de pós-treinamento de modelos de linguagem pré-treinados, sendo a terceira a inovação da TypeSafe: [AI Primer](../sources/introduction-machine-learning-primer.md)
@@ -83,8 +61,6 @@ A crítica da TypeSafe ao RLHF é direta: otimizar para "o que as pessoas prefer
 | Casos de uso | Humano no loop (chatbots, copilots, agentes de código); problemas verificáveis (provas matemáticas, otimização de kernel); demos | Workflows com IA / "if-statements inteligentes" (classificar, rotear, pontuar, extrair, ramificar); map-reduce sobre grandes volumes de dados; aplicações em tempo real; verificar/guardrail/julgar saídas de LLMs |
 
 Fonte: [Introducing System One Models & Jev](../sources/blog-introducing-system-one-and-jev.md)
-
-**Outras medidas de latência citadas.** A tabela acima traz o número oficial de 70ms–500ms ponta a ponta **[Oficial]**. Os vídeos mais recentes citam faixas próximas: 100–300ms por consulta (vídeo A) e resposta em "menos de um segundo" num prompt de teste (vídeo B), este último sem medição formal **[Reportado em vídeo]**. As medições de vídeo não substituem o número oficial; servem só como corroboração de ordem de grandeza.
 
 ## Evidências técnicas
 

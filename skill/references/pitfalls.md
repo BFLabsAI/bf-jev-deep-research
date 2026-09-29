@@ -60,17 +60,3 @@ Tentativas documentadas de usar a Jev para sinais de Bitcoin/ações (incluindo 
 ## 9. Não peça texto livre
 
 **Se** você precisar de uma explicação, resumo, ou qualquer saída em linguagem natural aberta, **então** a Jev não é a ferramenta certa — ela não gera texto livre de forma confiável. Use-a só para o julgamento tipado (`choice`/`score`/`noul`) e delegue qualquer geração de texto para um LLM generativo. Fonte: [../../02 - Jev Model Thesis.md](../../study/curated/02%20-%20Jev%20Model%20Thesis.md).
-
-## 10. Números de vídeo são amostras pequenas ou estimativas
-
-**Se** você basear uma decisão de arquitetura num número de vídeo (70% de economia em 12 prompts, Opus ~30 s contra Jev ~5 s em 14 testes, ~10x menos tokens num review), **então** trate-o como direção, não como garantia: são amostras pequenas medidas por quem apresentou, ou estimativas calculadas no próprio vídeo. Valide com um golden dataset seu (inputs reais e respostas corretas) comparando Jev e o modelo que ela substituiria em acurácia, custo e velocidade antes de ir para produção.
-
-Uma divergência concreta já encontrada: o vídeo A diz que `score` aceita "11 níveis (0–10)"; a documentação oficial diz **até 10 níveis** ([primitives-score](../../study/sources/primitives-score.md)). **Vale a oficial** — desenhe rubricas de 2 a 10 níveis descritos. O resumo automático dos vídeos também usa nomes de modelo inconsistentes entre si; cite como "segundo o vídeo", sem normalizar. Fonte: [coding-agents.md](./coding-agents.md), vídeos [A](../../study/sources-youtube/Jev%20_%20Claude%20Code_%20Architecting%20the%20Ultimate%20Low-Cost%20Agentic%20Coding%20Loop.md) e [B](../../study/sources-youtube/Jev_%20Revolutionizing%20Claude%20Code%20and%20Agentic%20Workflows%20with%20System%201%20AI.md).
-
-## 11. Flags de linter e review qualitativo são pistas, não veredito
-
-**Se** você usar a Jev como linter qualitativo ou triagem de review, **então** trate cada flag como pista para revisão, não como veredito. Falsos positivos existem e o volume pode ser grande: no exemplo do vídeo A, a lista curta de um único codebase chegou a ~1.700 comentários para revisar. Passe a lista por um modelo barato ou por um humano antes de agir, meça a precisão numa amostra rotulada por você e ajuste a rubrica (`instructions`/`criteria`) quando o falso positivo for alto. A mesma cautela vale para classificadores de histórico como o Commit Miner. Fonte: [../../01 - Jev Use Cases.md](../../study/curated/01%20-%20Jev%20Use%20Cases.md), [coding-agents.md](./coding-agents.md).
-
-## 12. Confidence alto não é gate único nos loops de coding agent
-
-**Se** o veredito da Jev (verificação de diff, review, roteamento de skill ou de modelo) for decidir merge, deploy ou uma ação destrutiva, **então** mantenha o gate determinístico (testes, permissões, revisão humana) — é a mesma regra da seção 5, aplicada aos usos do playbook: um `weakened_test` baixo não prova que o teste continua bom, e um `noul` de fraude em 94% não substitui a regra de negócio. O vídeo A cita mandar achados graves de segurança para modelos que evitam recusas; **não faça isso**, contornar refusals é risco de segurança e de termos de uso — use o fluxo normal de segurança. Fonte: [coding-agents.md](./coding-agents.md), vídeo [A](../../study/sources-youtube/Jev%20_%20Claude%20Code_%20Architecting%20the%20Ultimate%20Low-Cost%20Agentic%20Coding%20Loop.md).
