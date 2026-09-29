@@ -11,7 +11,7 @@
 
 </div>
 
-**bf-jev-deep-research instala, com um comando, uma Agent Skill pronta para Claude Code, Cursor e Codex que ensina um agente de IA a usar corretamente a [Jev](https://typesafe.ai), o primeiro "System One Model" da TypeSafe AI** — e carrega junto o estudo bruto completo que sustenta cada afirmação da skill: 8 transcrições de vídeo analisadas, ~60 páginas da documentação oficial preservadas verbatim, e 7 documentos de síntese em português.
+**bf-jev-deep-research instala, com um comando, uma Agent Skill pronta para Claude Code, Cursor e Codex que ensina um agente de IA a usar corretamente a [Jev](https://typesafe.ai), o primeiro "System One Model" da TypeSafe AI** — e carrega junto o estudo bruto completo que sustenta cada afirmação da skill: 8 transcrições de vídeo analisadas, 50 páginas da documentação oficial em markdown bruto (exatamente como o site serve), 3 páginas do site institucional, e 7 documentos de síntese em português.
 
 > "Models have been superhuman at chat for years, so where is all the automation?"
 > — [Diogo Almeida](https://typesafe.ai/team), founder da TypeSafe AI, em [Introducing System One Models & Jev](./study/sources/blog-introducing-system-one-and-jev.md)
@@ -113,7 +113,7 @@ bf-jev-deep-research/
     │   ├── 06 - Jev client Sdk's Overview.md
     │   └── 07 - Jev API Reference Overview.md
     ├── sources-youtube/                # 8 transcrições brutas (YouTube), fase 1
-    └── sources/                        # ~60 páginas oficiais da TypeSafe AI, verbatim, fase 2
+    └── sources/                        # 50 páginas da doc oficial (markdown bruto) + 3 do site, fase 2
 ```
 
 ---
@@ -145,7 +145,7 @@ O motivo de paralelizar por *categoria* (não por vídeo) é simples: um caso de
 
 1. Descoberta da árvore completa da documentação via `docs.typesafe.ai/llms.txt` (~90 páginas).
 2. Seleção das páginas relevantes por documento-alvo (thesis, primitives, foundations, patterns, SDKs, API reference) e **uma frota de 6 subagentes, cada um dono de exatamente um documento final** — para evitar o problema clássico de múltiplos agentes escrevendo no mesmo arquivo ao mesmo tempo. Cada agente buscava suas páginas, salvava o conteúdo bruto como fonte local citável (regra de *grounding*: nenhuma afirmação sem uma fonte que existe dentro do próprio repositório, nunca uma URL solta) e só então escrevia o documento de síntese, sempre em português.
-3. **Correção de fidelidade**: o primeiro fetcher usado (`WebFetch`) se recusa, por política própria, a reproduzir certas páginas *verbatim* — ele devolve uma reconstrução parafraseada. Isso foi detectado, sinalizado explicitamente nos documentos afetados, e depois corrigido: um segundo fetcher (via `tavily`) foi usado para buscar o conteúdo real das ~17 páginas afetadas, e uma segunda rodada de subagentes comparou a versão parafraseada com a verbatim, corrigindo imprecisões factuais reais que a paráfrase tinha introduzido (nomes, contagens, exemplos de código aproximados em vez de reais) — documentado com exemplos concretos em cada documento afetado.
+3. **Fidelidade das fontes**: as páginas de `docs.typesafe.ai` são baixadas direto em markdown bruto (`<página>.md`, o mesmo formato listado no `llms.txt` do site), sem nenhum modelo de IA resumindo ou reescrevendo no caminho. Isso importa porque ferramentas que "leem" a página por meio de um modelo devolvem versões parafraseadas e incompletas — uma primeira coleta desta pesquisa fez exatamente isso, e a comparação com o markdown bruto mostrou páginas que tinham menos da metade do conteúdo original.
 4. Auditoria final de integridade de link em todo o corpus (0 erros).
 
 O ponto central da Fase 2 não é só "buscar a documentação" — é que **paráfrase automática de LLM introduz erros sutis silenciosamente**, e o processo aqui foi desenhado para detectar isso e corrigir com uma segunda fonte independente, em vez de confiar na primeira passada.

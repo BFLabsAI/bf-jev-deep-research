@@ -174,7 +174,7 @@ Implementação viva de **Speculative Fan-Out** + fallback para LLM generativo. 
 | [Pre-parsed Value Extraction](../../study/sources/cookbook-pre-parsed-value-extraction.md) | Extrair valores sem risco de alucinação | `choice`, `noul` | Regex localiza candidatos; Jev só escolhe entre eles — nunca inventa |
 | [Hierarchical Classification](../../study/sources/cookbook-hierarchical-classification.md) | Classificar em taxonomias profundas sem propagar erro raso | `choice` | Beam search paralelo (K=3) com média geométrica supera top-1 guloso — 4/4 vs 2/4 |
 | [Autoresearch Feature Discovery](../../study/sources/cookbook-autoresearch-feature-discovery.md) | Converter texto não-estruturado em features numéricas p/ ML | `score`, `noul` | Loop: propõe perguntas → responde → treina → refina; RMSE de 2.15 para 1.77 em 5 rodadas |
-| [Classification using Confidence](../../study/sources/cookbook-classification-using-confidence.md) | Classificar em 75 categorias sem falsa precisão | `choice` | Confiança ≥ 0.9 → categoria específica; abaixo → categoria pai — 80% útil vs 65% |
+| [Classification using Confidence](../../study/sources/cookbook-classification-using-confidence.md) | Classificar em 75 grupos sem falsa precisão | `choice` | Confiança ≥ 0.9 → grupo específico; abaixo → divisão mais ampla. Em 60 relatórios: acima de 0.9 acerta 90%; abaixo, 40% no grupo e 70% na divisão |
 
 ### 3 receitas para copiar direto
 

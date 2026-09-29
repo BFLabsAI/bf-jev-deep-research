@@ -1,18 +1,250 @@
 ---
 título: "Advanced: structure"
-fonte: https://docs.typesafe.ai/primitives/advanced.md
-plataforma: TypeSafe AI Docs
-data: 22/09/2026
+fonte: "https://docs.typesafe.ai/primitives/advanced.md"
+plataforma: "TypeSafe AI Docs"
+data: "29/09/2026"
 idioma: en
 tags:
   - Jev
   - TypeSafe AI
-  - Primitives
-  - Advanced
 ---
+
+> ## Documentation Index
+> Fetch the complete documentation index at: https://docs.typesafe.ai/llms.txt
+> Use this file to discover all available pages before exploring further.
+
 # Advanced: structure
 
 > Instructions, Choice options, Score levels, and Noul criteria all accept JSON structure.
+
+export function TypesafeExample({example, display, title}) {
+  const keyStrUriSafe = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-$";
+  function compressToEncodedURIComponent(input) {
+    if (input == null) return "";
+    return _compress(input, 6, function (a) {
+      return keyStrUriSafe.charAt(a);
+    });
+  }
+  function _compress(uncompressed, bitsPerChar, getCharFromInt) {
+    if (uncompressed == null) return "";
+    var i, value, context_dictionary = {}, context_dictionaryToCreate = {}, context_c = "", context_wc = "", context_w = "", context_enlargeIn = 2, context_dictSize = 3, context_numBits = 2, context_data = [], context_data_val = 0, context_data_position = 0, ii;
+    for (ii = 0; ii < uncompressed.length; ii += 1) {
+      context_c = uncompressed.charAt(ii);
+      if (!Object.prototype.hasOwnProperty.call(context_dictionary, context_c)) {
+        context_dictionary[context_c] = context_dictSize++;
+        context_dictionaryToCreate[context_c] = true;
+      }
+      context_wc = context_w + context_c;
+      if (Object.prototype.hasOwnProperty.call(context_dictionary, context_wc)) {
+        context_w = context_wc;
+      } else {
+        if (Object.prototype.hasOwnProperty.call(context_dictionaryToCreate, context_w)) {
+          if (context_w.charCodeAt(0) < 256) {
+            for (i = 0; i < context_numBits; i++) {
+              context_data_val = context_data_val << 1;
+              if (context_data_position == bitsPerChar - 1) {
+                context_data_position = 0;
+                context_data.push(getCharFromInt(context_data_val));
+                context_data_val = 0;
+              } else {
+                context_data_position++;
+              }
+            }
+            value = context_w.charCodeAt(0);
+            for (i = 0; i < 8; i++) {
+              context_data_val = context_data_val << 1 | value & 1;
+              if (context_data_position == bitsPerChar - 1) {
+                context_data_position = 0;
+                context_data.push(getCharFromInt(context_data_val));
+                context_data_val = 0;
+              } else {
+                context_data_position++;
+              }
+              value = value >> 1;
+            }
+          } else {
+            value = 1;
+            for (i = 0; i < context_numBits; i++) {
+              context_data_val = context_data_val << 1 | value;
+              if (context_data_position == bitsPerChar - 1) {
+                context_data_position = 0;
+                context_data.push(getCharFromInt(context_data_val));
+                context_data_val = 0;
+              } else {
+                context_data_position++;
+              }
+              value = 0;
+            }
+            value = context_w.charCodeAt(0);
+            for (i = 0; i < 16; i++) {
+              context_data_val = context_data_val << 1 | value & 1;
+              if (context_data_position == bitsPerChar - 1) {
+                context_data_position = 0;
+                context_data.push(getCharFromInt(context_data_val));
+                context_data_val = 0;
+              } else {
+                context_data_position++;
+              }
+              value = value >> 1;
+            }
+          }
+          context_enlargeIn--;
+          if (context_enlargeIn == 0) {
+            context_enlargeIn = Math.pow(2, context_numBits);
+            context_numBits++;
+          }
+          delete context_dictionaryToCreate[context_w];
+        } else {
+          value = context_dictionary[context_w];
+          for (i = 0; i < context_numBits; i++) {
+            context_data_val = context_data_val << 1 | value & 1;
+            if (context_data_position == bitsPerChar - 1) {
+              context_data_position = 0;
+              context_data.push(getCharFromInt(context_data_val));
+              context_data_val = 0;
+            } else {
+              context_data_position++;
+            }
+            value = value >> 1;
+          }
+        }
+        context_enlargeIn--;
+        if (context_enlargeIn == 0) {
+          context_enlargeIn = Math.pow(2, context_numBits);
+          context_numBits++;
+        }
+        context_dictionary[context_wc] = context_dictSize++;
+        context_w = String(context_c);
+      }
+    }
+    if (context_w !== "") {
+      if (Object.prototype.hasOwnProperty.call(context_dictionaryToCreate, context_w)) {
+        if (context_w.charCodeAt(0) < 256) {
+          for (i = 0; i < context_numBits; i++) {
+            context_data_val = context_data_val << 1;
+            if (context_data_position == bitsPerChar - 1) {
+              context_data_position = 0;
+              context_data.push(getCharFromInt(context_data_val));
+              context_data_val = 0;
+            } else {
+              context_data_position++;
+            }
+          }
+          value = context_w.charCodeAt(0);
+          for (i = 0; i < 8; i++) {
+            context_data_val = context_data_val << 1 | value & 1;
+            if (context_data_position == bitsPerChar - 1) {
+              context_data_position = 0;
+              context_data.push(getCharFromInt(context_data_val));
+              context_data_val = 0;
+            } else {
+              context_data_position++;
+            }
+            value = value >> 1;
+          }
+        } else {
+          value = 1;
+          for (i = 0; i < context_numBits; i++) {
+            context_data_val = context_data_val << 1 | value;
+            if (context_data_position == bitsPerChar - 1) {
+              context_data_position = 0;
+              context_data.push(getCharFromInt(context_data_val));
+              context_data_val = 0;
+            } else {
+              context_data_position++;
+            }
+            value = 0;
+          }
+          value = context_w.charCodeAt(0);
+          for (i = 0; i < 16; i++) {
+            context_data_val = context_data_val << 1 | value & 1;
+            if (context_data_position == bitsPerChar - 1) {
+              context_data_position = 0;
+              context_data.push(getCharFromInt(context_data_val));
+              context_data_val = 0;
+            } else {
+              context_data_position++;
+            }
+            value = value >> 1;
+          }
+        }
+        context_enlargeIn--;
+        if (context_enlargeIn == 0) {
+          context_enlargeIn = Math.pow(2, context_numBits);
+          context_numBits++;
+        }
+        delete context_dictionaryToCreate[context_w];
+      } else {
+        value = context_dictionary[context_w];
+        for (i = 0; i < context_numBits; i++) {
+          context_data_val = context_data_val << 1 | value & 1;
+          if (context_data_position == bitsPerChar - 1) {
+            context_data_position = 0;
+            context_data.push(getCharFromInt(context_data_val));
+            context_data_val = 0;
+          } else {
+            context_data_position++;
+          }
+          value = value >> 1;
+        }
+      }
+      context_enlargeIn--;
+      if (context_enlargeIn == 0) {
+        context_enlargeIn = Math.pow(2, context_numBits);
+        context_numBits++;
+      }
+    }
+    value = 2;
+    for (i = 0; i < context_numBits; i++) {
+      context_data_val = context_data_val << 1 | value & 1;
+      if (context_data_position == bitsPerChar - 1) {
+        context_data_position = 0;
+        context_data.push(getCharFromInt(context_data_val));
+        context_data_val = 0;
+      } else {
+        context_data_position++;
+      }
+      value = value >> 1;
+    }
+    while (true) {
+      context_data_val = context_data_val << 1;
+      if (context_data_position == bitsPerChar - 1) {
+        context_data.push(getCharFromInt(context_data_val));
+        break;
+      } else context_data_position++;
+    }
+    return context_data.join("");
+  }
+  function buildHref(ex) {
+    const documentText = ex.state === undefined ? "" : typeof ex.state === "string" ? ex.state : JSON.stringify(ex.state, null, 2);
+    return "https://console.typesafe.ai/decode#share/" + compressToEncodedURIComponent(JSON.stringify({
+      apiVersion: "v1",
+      documentText,
+      promptsText: JSON.stringify(ex.questions, null, 2),
+      selectedModels: ex.selectedModels
+    }));
+  }
+  const displayedExample = display === "questions" ? example.questions : example.state === undefined ? {
+    questions: example.questions
+  } : {
+    state: example.state,
+    questions: example.questions
+  };
+  const code = JSON.stringify(displayedExample, null, 2);
+  const href = buildHref(example);
+  return <div style={{
+    margin: "1.25rem 0"
+  }}>
+      <CodeBlock language="json" filename={title ?? "request"}>
+        {code}
+      </CodeBlock>
+      <div className="pb-8">
+        <a href={href} target="_blank" rel="noreferrer" className="text-primary">
+          Try it in the Playground →
+        </a>
+      </div>
+    </div>;
+}
 
 System One models are trained to understand structure.
 
@@ -20,12 +252,12 @@ System One models are trained to understand structure.
 
 Every one of these fields is an [`EntryType`](/sdk/javascript/api/type-aliases/EntryType).
 
-| Field                                   | Applies to          | Accepted shape                         |
-| --------------------------------------- | -------------------- | --------------------------------------- |
-| `instructions`                          | Choice, Score, Noul | `string`, `object`, `array`, or `null` |
-| `criteria` values (option descriptions) | Choice              | `string`, `object`, `array`, or `null` |
-| `criteria` entries (level descriptions) | Score               | `string`, `object`, `array`, or `null` |
-| `criteria.true` and `criteria.false`    | Noul                | `string`, `object`, `array`, or `null` |
+| Field | Applies to | Accepted shape |
+| - | - | - |
+| `instructions` | Choice, Score, Noul | `string`, `object`, `array`, or `null` |
+| `criteria` values (option descriptions) | Choice | `string`, `object`, `array`, or `null` |
+| `criteria` entries (level descriptions) | Score | `string`, `object`, `array`, or `null` |
+| `criteria.true` and `criteria.false` | Noul | `string`, `object`, `array`, or `null` |
 
 ## When to structure a question
 

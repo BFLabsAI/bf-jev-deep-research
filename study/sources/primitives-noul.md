@@ -1,18 +1,250 @@
 ---
-título: Noul
-fonte: https://docs.typesafe.ai/primitives/noul.md
-plataforma: TypeSafe AI Docs
-data: 22/09/2026
+título: "Noul"
+fonte: "https://docs.typesafe.ai/primitives/noul.md"
+plataforma: "TypeSafe AI Docs"
+data: "29/09/2026"
 idioma: en
 tags:
   - Jev
   - TypeSafe AI
-  - Primitives
-  - Noul
 ---
+
+> ## Documentation Index
+> Fetch the complete documentation index at: https://docs.typesafe.ai/llms.txt
+> Use this file to discover all available pages before exploring further.
+
 # Noul
 
 > A Noul question asks the TypeSafe model to evaluate a yes/no question and return the probability that the answer is yes.
+
+export function TypesafeExample({example, display, title}) {
+  const keyStrUriSafe = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-$";
+  function compressToEncodedURIComponent(input) {
+    if (input == null) return "";
+    return _compress(input, 6, function (a) {
+      return keyStrUriSafe.charAt(a);
+    });
+  }
+  function _compress(uncompressed, bitsPerChar, getCharFromInt) {
+    if (uncompressed == null) return "";
+    var i, value, context_dictionary = {}, context_dictionaryToCreate = {}, context_c = "", context_wc = "", context_w = "", context_enlargeIn = 2, context_dictSize = 3, context_numBits = 2, context_data = [], context_data_val = 0, context_data_position = 0, ii;
+    for (ii = 0; ii < uncompressed.length; ii += 1) {
+      context_c = uncompressed.charAt(ii);
+      if (!Object.prototype.hasOwnProperty.call(context_dictionary, context_c)) {
+        context_dictionary[context_c] = context_dictSize++;
+        context_dictionaryToCreate[context_c] = true;
+      }
+      context_wc = context_w + context_c;
+      if (Object.prototype.hasOwnProperty.call(context_dictionary, context_wc)) {
+        context_w = context_wc;
+      } else {
+        if (Object.prototype.hasOwnProperty.call(context_dictionaryToCreate, context_w)) {
+          if (context_w.charCodeAt(0) < 256) {
+            for (i = 0; i < context_numBits; i++) {
+              context_data_val = context_data_val << 1;
+              if (context_data_position == bitsPerChar - 1) {
+                context_data_position = 0;
+                context_data.push(getCharFromInt(context_data_val));
+                context_data_val = 0;
+              } else {
+                context_data_position++;
+              }
+            }
+            value = context_w.charCodeAt(0);
+            for (i = 0; i < 8; i++) {
+              context_data_val = context_data_val << 1 | value & 1;
+              if (context_data_position == bitsPerChar - 1) {
+                context_data_position = 0;
+                context_data.push(getCharFromInt(context_data_val));
+                context_data_val = 0;
+              } else {
+                context_data_position++;
+              }
+              value = value >> 1;
+            }
+          } else {
+            value = 1;
+            for (i = 0; i < context_numBits; i++) {
+              context_data_val = context_data_val << 1 | value;
+              if (context_data_position == bitsPerChar - 1) {
+                context_data_position = 0;
+                context_data.push(getCharFromInt(context_data_val));
+                context_data_val = 0;
+              } else {
+                context_data_position++;
+              }
+              value = 0;
+            }
+            value = context_w.charCodeAt(0);
+            for (i = 0; i < 16; i++) {
+              context_data_val = context_data_val << 1 | value & 1;
+              if (context_data_position == bitsPerChar - 1) {
+                context_data_position = 0;
+                context_data.push(getCharFromInt(context_data_val));
+                context_data_val = 0;
+              } else {
+                context_data_position++;
+              }
+              value = value >> 1;
+            }
+          }
+          context_enlargeIn--;
+          if (context_enlargeIn == 0) {
+            context_enlargeIn = Math.pow(2, context_numBits);
+            context_numBits++;
+          }
+          delete context_dictionaryToCreate[context_w];
+        } else {
+          value = context_dictionary[context_w];
+          for (i = 0; i < context_numBits; i++) {
+            context_data_val = context_data_val << 1 | value & 1;
+            if (context_data_position == bitsPerChar - 1) {
+              context_data_position = 0;
+              context_data.push(getCharFromInt(context_data_val));
+              context_data_val = 0;
+            } else {
+              context_data_position++;
+            }
+            value = value >> 1;
+          }
+        }
+        context_enlargeIn--;
+        if (context_enlargeIn == 0) {
+          context_enlargeIn = Math.pow(2, context_numBits);
+          context_numBits++;
+        }
+        context_dictionary[context_wc] = context_dictSize++;
+        context_w = String(context_c);
+      }
+    }
+    if (context_w !== "") {
+      if (Object.prototype.hasOwnProperty.call(context_dictionaryToCreate, context_w)) {
+        if (context_w.charCodeAt(0) < 256) {
+          for (i = 0; i < context_numBits; i++) {
+            context_data_val = context_data_val << 1;
+            if (context_data_position == bitsPerChar - 1) {
+              context_data_position = 0;
+              context_data.push(getCharFromInt(context_data_val));
+              context_data_val = 0;
+            } else {
+              context_data_position++;
+            }
+          }
+          value = context_w.charCodeAt(0);
+          for (i = 0; i < 8; i++) {
+            context_data_val = context_data_val << 1 | value & 1;
+            if (context_data_position == bitsPerChar - 1) {
+              context_data_position = 0;
+              context_data.push(getCharFromInt(context_data_val));
+              context_data_val = 0;
+            } else {
+              context_data_position++;
+            }
+            value = value >> 1;
+          }
+        } else {
+          value = 1;
+          for (i = 0; i < context_numBits; i++) {
+            context_data_val = context_data_val << 1 | value;
+            if (context_data_position == bitsPerChar - 1) {
+              context_data_position = 0;
+              context_data.push(getCharFromInt(context_data_val));
+              context_data_val = 0;
+            } else {
+              context_data_position++;
+            }
+            value = 0;
+          }
+          value = context_w.charCodeAt(0);
+          for (i = 0; i < 16; i++) {
+            context_data_val = context_data_val << 1 | value & 1;
+            if (context_data_position == bitsPerChar - 1) {
+              context_data_position = 0;
+              context_data.push(getCharFromInt(context_data_val));
+              context_data_val = 0;
+            } else {
+              context_data_position++;
+            }
+            value = value >> 1;
+          }
+        }
+        context_enlargeIn--;
+        if (context_enlargeIn == 0) {
+          context_enlargeIn = Math.pow(2, context_numBits);
+          context_numBits++;
+        }
+        delete context_dictionaryToCreate[context_w];
+      } else {
+        value = context_dictionary[context_w];
+        for (i = 0; i < context_numBits; i++) {
+          context_data_val = context_data_val << 1 | value & 1;
+          if (context_data_position == bitsPerChar - 1) {
+            context_data_position = 0;
+            context_data.push(getCharFromInt(context_data_val));
+            context_data_val = 0;
+          } else {
+            context_data_position++;
+          }
+          value = value >> 1;
+        }
+      }
+      context_enlargeIn--;
+      if (context_enlargeIn == 0) {
+        context_enlargeIn = Math.pow(2, context_numBits);
+        context_numBits++;
+      }
+    }
+    value = 2;
+    for (i = 0; i < context_numBits; i++) {
+      context_data_val = context_data_val << 1 | value & 1;
+      if (context_data_position == bitsPerChar - 1) {
+        context_data_position = 0;
+        context_data.push(getCharFromInt(context_data_val));
+        context_data_val = 0;
+      } else {
+        context_data_position++;
+      }
+      value = value >> 1;
+    }
+    while (true) {
+      context_data_val = context_data_val << 1;
+      if (context_data_position == bitsPerChar - 1) {
+        context_data.push(getCharFromInt(context_data_val));
+        break;
+      } else context_data_position++;
+    }
+    return context_data.join("");
+  }
+  function buildHref(ex) {
+    const documentText = ex.state === undefined ? "" : typeof ex.state === "string" ? ex.state : JSON.stringify(ex.state, null, 2);
+    return "https://console.typesafe.ai/decode#share/" + compressToEncodedURIComponent(JSON.stringify({
+      apiVersion: "v1",
+      documentText,
+      promptsText: JSON.stringify(ex.questions, null, 2),
+      selectedModels: ex.selectedModels
+    }));
+  }
+  const displayedExample = display === "questions" ? example.questions : example.state === undefined ? {
+    questions: example.questions
+  } : {
+    state: example.state,
+    questions: example.questions
+  };
+  const code = JSON.stringify(displayedExample, null, 2);
+  const href = buildHref(example);
+  return <div style={{
+    margin: "1.25rem 0"
+  }}>
+      <CodeBlock language="json" filename={title ?? "request"}>
+        {code}
+      </CodeBlock>
+      <div className="pb-8">
+        <a href={href} target="_blank" rel="noreferrer" className="text-primary">
+          Try it in the Playground →
+        </a>
+      </div>
+    </div>;
+}
 
 Use a Noul when the answer is yes or no. For example, does this message ask for a refund, does this resume mention distributed systems, does this comment contain personal data. If the answer is one of several options, use a [Choice](/primitives/choice). If it's a position on a spectrum, use a [Score](/primitives/score). [Choose a question type](/primitives#choose-a-question-type) compares all three.
 
@@ -119,14 +351,14 @@ The number is the answer and the certainty in one. A value near 1 is a strong ye
 
 The table below shows recorded `jev-1.13.0` answers to the `is_human_escalation` question for different customer messages:
 
-| State                                                                  | `noul` |
-| ---------------------------------------------------------------------- | ------ |
-| Thanks, that fixed it!                                                 | 0.02   |
-| How do I reset my password?                                            | 0.07   |
-| I need this sorted today, whatever it takes.                           | 0.26   |
-| Are you a bot?                                                         | 0.40   |
-| Is there any way to speak to someone about my invoice?                 | 0.84   |
-| I have asked three times now. Can I please just talk to a real person? | 0.99   |
+| State | `noul` |
+| - | - |
+| Thanks, that fixed it! | 0.02 |
+| How do I reset my password? | 0.07 |
+| I need this sorted today, whatever it takes. | 0.26 |
+| Are you a bot? | 0.40 |
+| Is there any way to speak to someone about my invoice? | 0.84 |
+| I have asked three times now. Can I please just talk to a real person? | 0.99 |
 
 The first two and the last two are clear. "I need this sorted today" is urgent but never asks for a person, and gets 0.26. "Are you a bot?" hints at wanting a human without asking for one, and the model splits almost evenly at 0.40. Both are the kind of message where a decision needs to be made based on a threshold in your code.
 
@@ -147,12 +379,12 @@ Where to set the threshold depends on the cost of being wrong. Use 0.5 when yes 
 
 A Noul value runs from 0 to 1, but it's not a scale of the thing you asked about. It is the probability that the answer is yes. If the question is really about degree, the value does not measure the degree. Below, "Is the candidate strong in Python?" is asked about four candidates, next to a [Score](/primitives/score) with four levels: no experience, some familiarity, regular use in a job, deep expertise.
 
-| Candidate                                                                                   | Noul: "Is the candidate strong in Python?" | Score: "How much Python experience does the candidate have?" |
-| ------------------------------------------------------------------------------------------- | ------------------------------------------ | ------------------------------------------------------------ |
-| My experience is in Java and Go. I have not used Python.                                    | 0.03                                       | 0.0 (No experience)                                          |
-| I have used Python occasionally for small scripts alongside my main Java work.              | 0.14                                       | 1.0 (Some familiarity)                                       |
-| I used Python every day for two years in my last job, mostly data pipelines.                | 0.81                                       | 2.05 (Regular use in a job)                                  |
-| I have written Python daily for eight years, including maintaining a large Django codebase. | 0.92                                       | 2.89 (Deep expertise)                                        |
+| Candidate | Noul: "Is the candidate strong in Python?" | Score: "How much Python experience does the candidate have?" |
+| - | - | - |
+| My experience is in Java and Go. I have not used Python. | 0.03 | 0.0 (No experience) |
+| I have used Python occasionally for small scripts alongside my main Java work. | 0.14 | 1.0 (Some familiarity) |
+| I used Python every day for two years in my last job, mostly data pipelines. | 0.81 | 2.05 (Regular use in a job) |
+| I have written Python daily for eight years, including maintaining a large Django codebase. | 0.92 | 2.89 (Deep expertise) |
 
 The Noul judges one proposition, "strong", and the values are how likely it is. You could create levels in the 0 to 1 range in your code, such as 0.3 to 0.7 for "some experience", but the model will not see them, so nothing in the answer was judged against them. A middle value can mean medium experience or an unclear case, and the spacing between candidates is not something you chose. The Score judges each level description on its own, so every candidate landed on or near a level you wrote, and the returned probabilities show how the model divided its judgment between levels. If you disagree, reword a level and run it again. [Choose a question type](/primitives#choose-a-question-type) explains the distinction.
 
@@ -192,6 +424,7 @@ SUPPORT_QUESTIONS = {
 
 YES = 0.8
 NO = 0.2
+
 
 def route(message: str) -> None:
     with TypeSafeClient() as client:
@@ -301,6 +534,7 @@ from typesafe_sdk import Noul, TypeSafeClient
 
 SAME_PERSON = "Is the resume for the same person as `potential_duplicate`?"
 
+
 def duplicate_questions(candidates: list[dict]) -> dict[str, Noul]:
     """One Noul per candidate record, all asking the same question."""
     return {
@@ -316,6 +550,7 @@ def duplicate_questions(candidates: list[dict]) -> dict[str, Noul]:
         )
         for candidate in candidates
     }
+
 
 def find_duplicates(resume: dict, candidates: list[dict]) -> list[str]:
     with TypeSafeClient() as client:

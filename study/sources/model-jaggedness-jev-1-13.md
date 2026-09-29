@@ -1,67 +1,167 @@
 ---
-título: Jev 1.13 jaggedness
-fonte: https://docs.typesafe.ai/model-jaggedness/jev-1.13.md
-plataforma: TypeSafe AI Docs
-data: 22/09/2026
+título: "Jev 1.13 jaggedness"
+fonte: "https://docs.typesafe.ai/model-jaggedness/jev-1.13.md"
+plataforma: "TypeSafe AI Docs"
+data: "29/09/2026"
 idioma: en
 tags:
   - Jev
   - TypeSafe AI
-  - Limitations
-  - Docs
-  - Jaggedness
-title: Jev 1.13 Jaggedness
-description: Documentação da TypeSafe sobre as limitações conhecidas (jagged edges) do modelo Jev 1.13 e como mitigá-las.
 ---
+
+> ## Documentation Index
+> Fetch the complete documentation index at: https://docs.typesafe.ai/llms.txt
+> Use this file to discover all available pages before exploring further.
+
 # Jev 1.13 jaggedness
 
-> Jev isn't perfect. Here are some jagged edges TypeSafe is aware of with jev-1.13. Many of these will be fixed in later versions. Applies to jev-1.13. Last reviewed 2026-09-17.
+> Jev isn't perfect. Here are some jagged edges we are aware of with jev-1.13. Many of these will be fixed in later versions.
 
-jev-1.13 is fast, calibrated, and good at common-sense judgment but it is not perfect. jev-1.13 does the best on System One tasks. It may struggle with tasks that require additional levels of indirection. It can be quite literal in its understanding. It struggles with tasks that require numeric precision.
+<Note>
+  **Applies to `jev-1.13`.** Last reviewed 2026-09-17.
+</Note>
 
-## Failure modes
+`jev-1.13` is fast, calibrated, and good at common-sense judgment but it is not perfect. `jev-1.13` does the best on [System One](/concepts/system-one) tasks. It may struggle with tasks that require additional levels of indirection. It can be quite literal in its understanding. It struggles with tasks that require numeric precision.
+
+## The failure modes in detail
 
 | # | Failure mode | Do this instead |
-|---|---|---|
-| 1 | Literal reading | Write the exact condition, criteria for each available option |
-| 2 | Math and Numbers | Keep the arithmetic in code |
-| 3 | Date and time comparison | Extract components; compare in code |
-| 4 | Indirection | Reduce hops; point to the relevant state |
-| 5 | Large state full of irrelevant detail | Filter first; send only what the question needs |
-| 6 | Adversarial content | Write precise prompts, and test edge cases before deploying |
-| 7 | Contradictory instructions and criteria | Align the criteria and instruction |
-| 8 | Common-sense structural invariants | Ask each decision one way; enforce identities in code |
-| 9 | Generation | Use a generative model |
+| - | - | - |
+| 1 | [Literal reading](#literal-reading) | Write the exact condition, criteria for each available options |
+| 2 | [Math and Numbers](#math-and-numbers) | Keep the arithmetic in code |
+| 3 | [Date and time comparison](#date-and-time-comparison) | Extract components; compare in code |
+| 4 | [Indirection](#indirection) | Reduce hops; point to the relevant state |
+| 5 | [Large state full of irrelevant detail](#large-state-full-of-irrelevant-detail) | Filter first; send only what the question needs |
+| 6 | [Adversarial content](#adversarial-content) | Write precise prompts, and test edge cases before deploying |
+| 7 | [Contradictory instructions and criteria](#contradictory-instructions-and-criteria) | Align the criteria and instruction |
+| 8 | [Common-sense structural invariants](#common-sense-structural-invariants) | Ask each decision one way; enforce identities in code |
+| 9 | [Generation](#generation) | Use a generative model |
 
-### Literal reading
-jev-1.13 answers the question you wrote, not the one you meant. Scoping words, negations, and implied conditions are read at face value. Instead: state the exact condition in the instructions, be specific, put boundary cases in the criteria.
+## Literal reading
 
-### Math and Numbers
-Jev is not a calculator. Strongly recommend implementing mathematical logic in code. Jev performs better on semantic questions than mathematical ones.
+`jev-1.13` answers the question you wrote, not the one you meant. Scoping words, negations, and implied conditions are read at face value. A question will be answered based on the words written in the instruction, whereas a person might have read the intent behind the instructions.
 
-- Counting: jev-1.13 does not count reliably (characters, occurrences, items in a list). Instead: count in code, iterate and ask one question per candidate, sum in code.
-- Numeric representations: Jev performs better on semantic representations (English color names) than numeric ones (hex/RGB). Instead: do conversions in code, pass a computed number or named bucket.
-- Math using score: do not use score outputs to compute exact magnitude between two criterion levels; score levels are weak in numerical calibration.
+**Instead:** state the exact condition in the `instructions`. Be specific. Put boundary cases in the criteria. When you look at a wrong answer and find yourself explaining what you really meant, that explanation is the missing half of the instruction. Where interpretation is unavoidable, split it into two literal questions and combine them in code.
 
-### Date and time comparison
-jev-1.13 reads dates as text, not ordered quantities. Comparing dates, computing distance, or checking windows is unreliable, worse with mixed formats and relative references. Instead: split the work — extraction (a judgment) goes to the model as a Choice over enumerated options (month/day/year), with an explicit "not stated" option; arithmetic and ordering stay in code.
+## Math and Numbers
 
-### Indirection
-Questions with double negatives or requiring multiple hops of reasoning cost accuracy. Instead: write instructions directly; identify relevant parts of state by name.
+Jev is not a calculator. We strongly recommend implementing any mathematical logic in code. Jev will perform better on semantic questions than mathematical ones.
 
-### Large state full of irrelevant detail
-Accuracy falls as state grows with unrelated content (context rot). Instead: retrieve/filter in code first, send only fields the question needs; a Noul can filter for relevance when code filtering isn't possible.
+### Counting
 
-### Adversarial content
-State is treated as data, not hostile, by default. Adversarially steering content (injected instructions, misleading framing) can move the answer. Instead: be explicit in criteria; test thoroughly before deploying.
+`jev-1.13` does not count reliably. This covers characters in a word, occurrences of a term in a passage, and items in a long list. The model recognizes the shape of an answer rather than tallying, and the error grows with the size of the thing being counted.
 
-### Contradictory instructions and criteria
-When instructions and criteria conflict, jev-1.13 may get confused (e.g., a Noul where true maps to "no" performs worse). Instead: treat criteria as an extension of the instruction; align both with clear, precise language.
+Before asking a counting question, ask why the count needs a model at all. If the unit is something a regular expression or a parser can find, the count belongs in code and the model has nothing to add.
 
-### Common-sense structural invariants
-jev-1.13 is very consistent (similar inputs → similar outputs), but structural invariants a person might assume aren't guaranteed. Example: "Is the customer asking for a refund?" asked as a Noul vs. a yes/no Choice on the same ticket produced Noul noul=0.22 vs Choice yes=0.01/no=0.99/confidence=0.97 — not directly comparable. Another example: a question and its negation as two separate Nouls ("refund"=0.72, "not_refund"=0.47) summed to 1.19, not 1.0. Instead: don't rely on structural invariance; word questions to mean exactly what you want; don't carry a threshold tuned on a Noul over to a Choice; don't hold the model to arithmetic identities between separate questions.
+**Instead:** count in code. When you want to count items matching some criteria, iterate in code over the candidates and ask one question for each, then add up the answers yourself.
 
-### Generation
-jev-1.13 is not trained to generate text. Chaining choices to force generation works poorly and slowly. Instead: when the answer space is bounded, turn extraction into a Choice over options rather than asking for the value itself; use a generative model for true text generation.
+```python theme={null}
+from typesafe_sdk import Noul, TypeSafeClient
 
-> Resumo da doc — evitar: perguntar ao modelo algo que código pode computar exatamente; esconder vários julgamentos numa única pergunta; tarefas de "System Two" com muitas camadas de indireção; dar mais contexto no state do que a pergunta precisa (Jev sofre de context rot).
+client = TypeSafeClient(model="jev-1.13")
+YES = 0.5  # up to you on what you want the threshold to be, depends on your usecase.
+
+items = ["typesafe", "apple", "california", "banana", "likes", "calibration", "orange", "vertex"]
+
+result = client.system_one(
+    {"items": items},
+    {
+        f"item_{i}": Noul(instructions=f"Is `items[{i}]` the name of a fruit?")
+        for i in range(len(items))
+    },
+)
+
+count = sum(result.nouls[f"item_{i}"].noul > YES for i in range(len(items)))
+```
+
+### Numeric representations
+
+`jev-1.13` will perform better on semantic representations than numeric. For example, questions about colors using hex values will underperform compared to those using the English names. Given RGB triples or hex values it cannot reliably judge whether two values are near each other.
+
+Similarly, questions about high-level programming languages will perform better than questions about low level assembly, or binary encoded instructions.
+
+**Instead:** do the conversion in code and pass in either the computed number or a named bucket. Keep the model for the part that is genuinely a judgment, such as whether a color reads as a warning.
+
+### Math using score
+
+Please do not use score outputs (e.g., expectations and probability) to compute the exact magnitude of a number between two levels of a criterion. You can use the expectation to check if it passes a particular threshold, but `jev-1.13`'s score levels are weak in numerical calibration. It will not be able to help you reconstruct the exact number by interpolating between the nearest two levels.
+
+## Date and time comparison
+
+`jev-1.13` reads dates as text, not as ordered quantities. Asking which of two dates comes first, how far apart they are, or whether one falls inside a window is unreliable. It gets worse with mixed formats, relative references and domain boundaries such as quarters, settlement windows, and accrual periods.
+
+**Instead:** split the work. Extraction is a judgment, so give it to the model. Arithmetic is not, so keep it in code.
+
+Every part of a date is a small closed set: twelve months, thirty-one possible days, a bounded range of years. That turns extraction into a [Choice](/primitives/choice) over enumerated options rather than free-form parsing, and it gives you somewhere to put an explicit "not stated" option so a missing part is reported rather than guessed. Code assembles the parts into a real date and owns everything after that, including ordering, duration, offset, and weekday.
+
+The [date extraction cookbook](/cookbooks/date_extraction_cookbook) has the worked version, including relative dates and confidence gating.
+
+## Indirection
+
+Instructions carrying double negatives or complex indirection are answered less reliably. A question about a property of a property or something that requires multiple hops of reasoning costs accuracy.
+
+**Instead:** write your instructions as directly as possible. When possible, identify the relevant parts of state by name.
+
+## Large state full of irrelevant detail
+
+Accuracy falls as the state grows with content unrelated to the decision. Unrelated detail acts as a distractor, and a large state makes it harder to tell which part of the input produced a wrong answer.
+
+**Instead:** retrieve and filter in code first, and send only the fields the question needs. When it's not possible to filter in state, you can use a [Noul](/primitives/noul) to filter for relevance. The [classifying RAG passages cookbook](/cookbooks/classifying_rag_passages) has a worked example.
+
+<Note>
+  **Context length limit.** `jev-1.13` has a bounded context window. See the [Models](/models) page for the exact token limits.
+</Note>
+
+## Adversarial content
+
+State is data, and `jev-1.13` does not treat it as hostile by default. Content written to adversarially steer the model, whether that is an injected instruction, a deliberately misleading framing, or text that argues for its own classification, can move the answer. We expect to improve on this in the future.
+
+**Instead:** be explicit in the criteria. Test your integration thoroughly before deploying it to many users.
+
+## Contradictory instructions and criteria
+
+When the `instructions` and the `criteria` ask for different things, `jev-1.13` might get confused. The best performance comes from clear phrasing. For example, a Noul where `true` maps to no and `false` maps to yes will perform worse. Aim for instructions which are easy for the average person to read and understand.
+
+**Instead:** treat the criteria as an extension of the instruction. Align the two using clear and precise language.
+
+## Common-sense structural invariants
+
+`jev-1.13` is extremely consistent, meaning you should expect quantitatively similar outputs for semantically similar inputs.
+However there are many structural invariants one might imagine to hold that simply aren't guaranteed by the model.
+
+For example, "Is the customer asking for a refund?", asked as a [Noul](/primitives/noul) and as a yes/no [Choice](/primitives/choice) on the ticket "I'm not happy with the fit. What are my options here?":
+
+| Noul `noul` | Choice `yes` | Choice `no` | Choice `confidence` |
+| - | - | - | - |
+| 0.22 | 0.01 | 0.99 | 0.97 |
+
+The comparable numbers are `noul` and `probabilities["yes"]`, and it is not obvious how to interpret either the Choice output and confidence for the Noul question or vice versa.
+
+The same question and its negation, "Is the customer asking for something other than a refund?", as two Nouls on the ticket "I was charged twice for the same order. Can someone look into this?":
+
+| `refund` | `not_refund` | Sum |
+| - | - | - |
+| 0.72 | 0.47 | 1.19 |
+
+There are many reasons that `P(noul)` and `1 - P(not noul)` may not be directly comparable.
+
+**Instead:** don't rely on expected structural invariance, and word questions to mean directly what you want. Don't carry a threshold tuned on a Noul over to a Choice, and don't hold the model to arithmetic identities between separate questions. A Choice over options and one Noul per option answer different questions: the Choice is relative, settling *which* option, while each Noul is absolute and can be low for all of them. The [skill suggestion cookbook](/cookbooks/skill_suggestion) uses both on the same shortlist, the Choice to pick a skill and the Nouls to decide whether to suggest one at all.
+
+## Generation
+
+`jev-1.13` is not trained to generate text. While you can force it to by chaining choices, this will not work well and will be very slow. For data extraction, it is better to extract possible options using regex or a generative model and let `jev-1.13` pick the correct extraction.
+
+**Instead:** when the answer space is bounded, turn extraction into a [Choice](/primitives/choice) over the options rather than asking for the value itself. If you really need to generate text... there are other models for that.
+
+<Info>
+  **As a reminder, avoid the following:**
+
+  * Asking the model something code can compute exactly.
+  * Hiding several judgments inside one question.
+  * System Two tasks: more layers of indirections
+  * Giving it more context in `state` than the question needs. Jev suffers from context rot, so unrelated material in the `state` costs you accuracy.
+</Info>
+
+<Tip>
+  Found a failure mode that belongs on this list? We want to hear about it. Reach us on [Discord](https://discord.com/invite/WUujKYBp8s).
+</Tip>

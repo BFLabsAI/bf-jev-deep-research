@@ -1,35 +1,34 @@
 ---
-title: TypeSafe Docs — Quickstart
-description: "Página de Quick Start da TypeSafe AI: Playground, API REST, SDK Python e integração com agentes de código."
-título: Quickstart
-fonte: https://docs.typesafe.ai/introduction/quickstart.md
-plataforma: TypeSafe AI Docs
-data: 22/09/2026
+título: "Quick start"
+fonte: "https://docs.typesafe.ai/introduction/quickstart.md"
+plataforma: "TypeSafe AI Docs"
+data: "29/09/2026"
 idioma: en
 tags:
   - Jev
   - TypeSafe AI
-  - Quickstart
-  - API
-  - SDK
-  - Coding Agents
 ---
+
+> ## Documentation Index
+> Fetch the complete documentation index at: https://docs.typesafe.ai/llms.txt
+> Use this file to discover all available pages before exploring further.
+
 # Quick start
 
 > Prefer to just dive in? Here's everything you need to get started immediately.
 
 ## Try it: the Playground
 
-1. **Open the Playground** (https://console.typesafe.ai/playground) and log in.
+1. **Open the [Playground](https://console.typesafe.ai/playground)** and log in.
 2. **Paste any text** as the state.
 
-```plaintext
+```plaintext title="Sample state" theme={null}
 Hi, I've been trying to connect my Stripe account for 3 days and the integration keeps failing. I'm losing sales. Please help ASAP.
 ```
 
 3. **Add a question.** Try a Noul question: `"Does this message express urgency?"`
 
-```json
+```json theme={null}
 {
   "urgency": {
     "type": "noul",
@@ -42,39 +41,39 @@ Hi, I've been trying to connect my Stripe account for 3 days and the integration
 
 ## Call it: the API
 
-1. **Get your API key** from the dashboard (https://console.typesafe.ai/keys)
+1. **Get your API key** from the [dashboard](https://console.typesafe.ai/keys)
 2. **Make a POST request** to the API endpoint
-3. **Review the API Reference** (/api) for all the details.
+3. **Review the [API Reference](/api)** for all the details.
 
-```http
+```http theme={null}
 POST https://api.typesafe.ai/v1/systemone
-Authorization: Bearer <token>
+Authorization: Bearer <API_KEY>
 Content-Type: application/json
 ```
 
 ### Sample cURL command
 
-```bash
+```bash theme={null}
 curl -X POST https://api.typesafe.ai/v1/systemone \
   -H "Authorization: Bearer $TYPESAFE_API_KEY" \
   -H "Content-Type: application/json" \
   -d @- <<'EOF'
-{
-  "state": "Hi, I've been trying to connect my Stripe account for 3 days and the integration keeps failing. I'm losing sales. Please help ASAP.",
-  "model": "jev-latest",
-  "questions": {
-    "urgency": {
-      "type": "noul",
-      "instructions": "Does this message express urgency?"
+  {
+    "state": "Hi, I've been trying to connect my Stripe account for 3 days and the integration keeps failing. I'm losing sales. Please help ASAP.",
+    "model": "jev-latest",
+    "questions": {
+      "urgency": {
+        "type": "noul",
+        "instructions": "Does this message express urgency?"
+      }
     }
   }
-}
 EOF
 ```
 
 ### Request body
 
-```json
+```json theme={null}
 {
   "state": "Hi, I've been trying to connect my Stripe account for 3 days and the integration keeps failing. I'm losing sales. Please help ASAP.",
   "model": "jev-latest",
@@ -107,7 +106,7 @@ EOF
 
 ### Response body
 
-```json
+```json theme={null}
 {
   "model": "jev-1.13.0",
   "answers": {
@@ -148,25 +147,23 @@ EOF
 }
 ```
 
-See the API Reference (/api) for all the details.
+See the [API Reference](/api) for all the details.
 
 ## Code it: the Python SDK
 
 1. **Install the SDK** (requires Python >= 3.10).
 
-```bash
-# With pip
+```bash title="With pip" theme={null}
 pip install typesafe-sdk
 ```
 
-```bash
-# With uv
+```bash title="With uv" theme={null}
 uv add typesafe-sdk
 ```
 
 2. **Use the SDK.** The client reads `TYPESAFE_API_KEY` from the environment and calls `jev-latest` by default.
 
-```python
+```python theme={null}
 from typesafe_sdk import Choice, Noul, Score, TypeSafeClient
 
 client = TypeSafeClient()
@@ -200,40 +197,46 @@ response = client.system_one(
 
 print(response.answers["department"].choice)  # "technical"
 print(response.answers["frustration"].score)  # 1.0
-print(response.answers["is_urgent"].noul)  # 1.0
+print(response.answers["is_urgent"].noul)     # 1.0
 ```
 
-See client SDKs (/sdk) for installation options and detailed usage.
+See [client SDKs](/sdk) for installation options and detailed usage.
 
 ## Vibe it: the agent skill
 
-1. **Install the TypeSafe skill** (/agent-skill#installation) using the Claude Code plugin or `npx skills add typesafe-ai/skills --skill typesafe-ai`. You can also read SKILL.md on GitHub (https://github.com/typesafe-ai/skills/blob/main/skills/typesafe-ai/SKILL.md).
+1. **[Install the TypeSafe skill](/agent-skill#installation)** using the Claude Code plugin or `npx skills add typesafe-ai/skills --skill typesafe-ai`. You can also [read SKILL.md on GitHub](https://github.com/typesafe-ai/skills/blob/main/skills/typesafe-ai/SKILL.md).
 
-Run these two commands in your terminal:
+<Tabs>
+  <Tab title="Claude Code">
+    Run these two commands in your terminal:
 
-```bash
-claude plugin marketplace add typesafe-ai/skills
-claude plugin install typesafe@typesafe-ai
-```
+    ```bash theme={null}
+    claude plugin marketplace add typesafe-ai/skills
+    claude plugin install typesafe@typesafe-ai
+    ```
+  </Tab>
 
-Or, for other agents:
+  <Tab title="Other agents">
+    ```bash theme={null}
+    npx skills add typesafe-ai/skills --skill typesafe-ai
+    ```
 
-```bash
-npx skills add typesafe-ai/skills --skill typesafe-ai
-```
+    Choose your agent when prompted. Installation is project-local by default; add `-g` to install globally.
+  </Tab>
 
-Choose your agent when prompted. Installation is project-local by default; add `-g` to install globally.
+  <Tab title="Copy to your agent">
+    Paste this prompt into your coding agent:
 
-Or paste this prompt into your coding agent:
-
-```text
-Install the TypeSafe skill. If you're in Claude Code, run `claude plugin marketplace add typesafe-ai/skills`, then `claude plugin install typesafe@typesafe-ai`. If you're in another agent, run `npx skills add typesafe-ai/skills --skill typesafe-ai` and select your agent. Use one installation method. You can read the skill directly at https://github.com/typesafe-ai/skills/blob/main/skills/typesafe-ai/SKILL.md (raw: https://raw.githubusercontent.com/typesafe-ai/skills/main/skills/typesafe-ai/SKILL.md). Then use the TypeSafe skill when working on this project.
-```
+    ```text wrap theme={null}
+    Install the TypeSafe skill. If you're in Claude Code, run `claude plugin marketplace add typesafe-ai/skills`, then `claude plugin install typesafe@typesafe-ai`. If you're in another agent, run `npx skills add typesafe-ai/skills --skill typesafe-ai` and select your agent. Use one installation method. You can read the skill directly at https://github.com/typesafe-ai/skills/blob/main/skills/typesafe-ai/SKILL.md (raw: https://raw.githubusercontent.com/typesafe-ai/skills/main/skills/typesafe-ai/SKILL.md). Then use the TypeSafe skill when working on this project.
+    ```
+  </Tab>
+</Tabs>
 
 2. **Tell your coding agent** to use the TypeSafe skill as you build!
 
-```plaintext
+```plaintext title="Coding agent prompt" theme={null}
 Let's build a simple CLI that uses the TypeSafe API to evaluate a set of supplied documents on multiple dimensions. Use the TypeSafe skill to understand how to use the TypeSafe API and how to structure the system. Ask me questions about what kinds of documents I want to evaluate and on what dimensions.
 ```
 
-See the Agent Skill (/agent-skill) page for more details.
+See the [Agent Skill](/agent-skill) page for more details.

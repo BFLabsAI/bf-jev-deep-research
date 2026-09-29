@@ -1,94 +1,114 @@
 ---
-título: Python SDK
-fonte: https://docs.typesafe.ai/sdk/python.md
-plataforma: TypeSafe AI Docs
-data: 22/09/2026
+título: "TypeSafe Python SDK"
+fonte: "https://docs.typesafe.ai/sdk/python.md"
+plataforma: "TypeSafe AI Docs"
+data: "29/09/2026"
 idioma: en
 tags:
   - Jev
   - TypeSafe AI
-  - SDK
-title: TypeSafe Python SDK — Documentação
-description: "Página oficial de referência do SDK Python da TypeSafe AI: instalação, clientes sync/async e exemplo mínimo de chamada system_one."
 ---
-# Python SDK
 
-## Instalação
+> ## Documentation Index
+> Fetch the complete documentation index at: https://docs.typesafe.ai/llms.txt
+> Use this file to discover all available pages before exploring further.
 
-O SDK pode ser instalado via `uv add typesafe-sdk` ou `pip install typesafe-sdk`. É necessário configurar a variável de ambiente `TYPESAFE_API_KEY` antes de fazer chamadas.
+# TypeSafe Python SDK
 
-```sh
-uv add typesafe-sdk
-```
+> Install the TypeSafe Python SDK and get started with asynchronous or synchronous API calls.
 
-```sh
-pip install typesafe-sdk
-```
+<a id="typesafe-python-sdk" />
 
-## Funcionalidade principal
+Browse the [Python SDK source on GitHub](https://github.com/typesafe-ai/typesafe-sdk-python).
 
-A documentação demonstra chamar a API do System One tanto de forma assíncrona quanto síncrona. O exemplo mostra o processamento de um ticket de suporte fazendo três tipos de perguntas:
+Asynchronous and synchronous Python clients for the [TypeSafe](https://typesafe.ai) API. Learn how to use TypeSafe [here](https://docs.typesafe.ai/).
 
-- **Perguntas Noul**: avaliações binárias sim/não (ex.: "Este ticket é sobre cobrança?")
-- **Perguntas Choice**: seleção entre múltiplas opções (ex.: tom do cliente)
-- **Perguntas Score**: avaliação em uma escala (ex.: nível de urgência)
+<h2 id="quickstart">
+  Quickstart
+</h2>
 
-### Exemplo assíncrono
+1. Install the SDK:
 
-```python
-from typesafe_sdk import AsyncTypeSafeClient, Choice, Noul, Score
+   <Tabs>
+     <Tab title="uv">
+       ```sh theme={null}
+       uv add typesafe-sdk
+       ```
+     </Tab>
+
+     <Tab title="pip">
+       ```sh theme={null}
+       pip install typesafe-sdk
+       ```
+     </Tab>
+   </Tabs>
+
+   Add the `http2` extra (`typesafe-sdk[http2]`) to enable [HTTP/2 support](/sdk/python/usage#http2).
+2. Set `TYPESAFE_API_KEY` in your environment (create it [here](https://console.typesafe.ai/))
+3. Call the System One API:
+
+   <Tabs>
+     <Tab title="Async">
+       With [AsyncTypeSafeClient](/sdk/python/api/clients/async):
+
+       ```python theme={null}
+       from typesafe_sdk import AsyncTypeSafeClient, Choice, Noul, Score
 
 
-async def main() -> None:
-    async with AsyncTypeSafeClient() as client:
-        response = await client.system_one(
-            state={"document": "I was charged twice. Please fix this ASAP."},
-            questions={
-                "billing": Noul(instructions="Is this ticket about billing?"),
-                "tone": Choice(
-                    instructions="What is the customer's tone?",
-                    criteria={"calm": None, "frustrated": None, "angry": None},
-                ),
-                "urgency": Score(
-                    instructions="How urgent is this ticket?",
-                    criteria=["can wait", "this week", "today"],
-                ),
-            },
-        )
+       async def main() -> None:
+           async with AsyncTypeSafeClient() as client:
+               response = await client.system_one(
+                   state={"document": "I was charged twice. Please fix this ASAP."},
+                   questions={
+                       "billing": Noul(instructions="Is this ticket about billing?"),
+                       "tone": Choice(
+                           instructions="What is the customer's tone?",
+                           criteria={"calm": None, "frustrated": None, "angry": None},
+                       ),
+                       "urgency": Score(
+                           instructions="How urgent is this ticket?",
+                           criteria=["can wait", "this week", "today"],
+                       ),
+                   },
+               )
 
-    print(response.nouls["billing"].noul)
-    print(response.choices["tone"].choice)
-    print(response.scores["urgency"].score)
-```
+           print(response.nouls["billing"].noul)
+           print(response.choices["tone"].choice)
+           print(response.scores["urgency"].score)
+       ```
+     </Tab>
 
-### Exemplo síncrono
+     <Tab title="Sync">
+       With [TypeSafeClient](/sdk/python/api/clients/sync):
 
-```python
-from typesafe_sdk import Choice, Noul, Score, TypeSafeClient
+       ```python theme={null}
+       from typesafe_sdk import Choice, Noul, Score, TypeSafeClient
 
-with TypeSafeClient() as client:
-    response = client.system_one(
-        state={"document": "I was charged twice. Please fix this ASAP."},
-        questions={
-            "billing": Noul(instructions="Is this ticket about billing?"),
-            "tone": Choice(
-                instructions="What is the customer's tone?",
-                criteria={"calm": None, "frustrated": None, "angry": None},
-            ),
-            "urgency": Score(
-                instructions="How urgent is this ticket?",
-                criteria=["can wait", "this week", "today"],
-            ),
-        },
-    )
+       with TypeSafeClient() as client:
+           response = client.system_one(
+               state={"document": "I was charged twice. Please fix this ASAP."},
+               questions={
+                   "billing": Noul(instructions="Is this ticket about billing?"),
+                   "tone": Choice(
+                       instructions="What is the customer's tone?",
+                       criteria={"calm": None, "frustrated": None, "angry": None},
+                   ),
+                   "urgency": Score(
+                       instructions="How urgent is this ticket?",
+                       criteria=["can wait", "this week", "today"],
+                   ),
+               },
+           )
 
-print(response.nouls["billing"].noul)
-print(response.choices["tone"].choice)
-print(response.scores["urgency"].score)
-```
+       print(response.nouls["billing"].noul)
+       print(response.choices["tone"].choice)
+       print(response.scores["urgency"].score)
+       ```
+     </Tab>
+   </Tabs>
 
-## Detalhes principais
+<h2 id="whats-next">
+  What's next
+</h2>
 
-O cliente assíncrono usa `AsyncTypeSafeClient`, enquanto a versão síncrona usa `TypeSafeClient`. Ambos aceitam um objeto `state` com os dados de entrada e um dicionário `questions` definindo quais análises executar. Os resultados são retornados em campos separados: `nouls`, `choices` e `scores`.
-
-A documentação referencia o repositório GitHub e recomenda o guia de uso completo (ver [sdk-python-usage](./sdk-python-usage.md)) para mais detalhes.
+Visit the [Usage guide](/sdk/python/usage) to learn more about patterns such as [typed responses](/sdk/python/usage#typed-system_one-responses), [model selection](/sdk/python/usage#choosing-a-model), [retries](/sdk/python/usage#retries), [HTTP/2](/sdk/python/usage#http2), or [error handling](/sdk/python/usage#error-handling).

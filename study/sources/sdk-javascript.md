@@ -1,33 +1,33 @@
 ---
-título: JavaScript SDK
-fonte: https://docs.typesafe.ai/sdk/javascript.md
-plataforma: TypeSafe AI Docs
-data: 22/09/2026
+título: "JavaScript SDK"
+fonte: "https://docs.typesafe.ai/sdk/javascript.md"
+plataforma: "TypeSafe AI Docs"
+data: "29/09/2026"
 idioma: en
 tags:
   - Jev
   - TypeSafe AI
-  - SDK
-title: TypeSafe JavaScript/TypeScript SDK — Documentação
-description: "Página oficial de referência do SDK JavaScript/TypeScript da TypeSafe AI: instalação, quickstart e exemplo mínimo de chamada systemOne."
 ---
+
+> ## Documentation Index
+> Fetch the complete documentation index at: https://docs.typesafe.ai/llms.txt
+> Use this file to discover all available pages before exploring further.
+
 # JavaScript SDK
 
-JavaScript e TypeScript SDK para a TypeSafe AI.
+JavaScript and TypeScript SDK for [TypeSafe AI](https://typesafe.ai).
 
 ## Quickstart
 
-Requer Node.js 20 ou mais recente.
+Install the SDK (Node.js 20 or newer):
 
-Instalação:
-
-```sh
+```sh theme={null}
 npm install @typesafe-ai/sdk
 ```
 
-Configure `TYPESAFE_API_KEY` no ambiente, depois crie e use o cliente:
+Set `TYPESAFE_API_KEY` in your environment, then create and use the client:
 
-```ts
+```ts theme={null}
 import { choice, TypeSafeClient } from "@typesafe-ai/sdk";
 
 const client = new TypeSafeClient();
@@ -45,8 +45,9 @@ const response = await client.systemOne({
 console.log(response.answers.category.choice);
 ```
 
-Os tipos de resposta são inferidos a partir das perguntas (`questions`). O pacote inclui builds ESM, CommonJS e declarações TypeScript.
+Answer types are inferred from your questions. The package includes ESM, CommonJS, and TypeScript declarations.
 
-## Documentação adicional
+## Documentation
 
-A página aponta para a documentação geral da TypeSafe (docs.typesafe.ai) e para o código-fonte do SDK no GitHub (`client.ts` e `types.ts`) como referência de opções de API e valores padrão.
+Learn what TypeSafe can do in the [TypeSafe docs](https://docs.typesafe.ai/).
+See the SDK's [client](https://github.com/typesafe-ai/typesafe-sdk-js/blob/v0.6.0/src/client.ts) and [types](https://github.com/typesafe-ai/typesafe-sdk-js/blob/v0.6.0/src/types.ts) for API options and defaults.
